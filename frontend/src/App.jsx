@@ -87,8 +87,13 @@ const STYLES = `
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 24px;
-    scrollbar-width: thin;
-    scrollbar-color: #CBD5E1 #F8FAFC;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .gl-body-scroll-wrap::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   /* Desktop vs Mobile Utilities */
@@ -613,8 +618,8 @@ const STYLES = `
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%; height: 100dvh;
     background-color: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     z-index: 999999;
     display: flex;
     align-items: center;
@@ -622,6 +627,7 @@ const STYLES = `
     padding: 16px;
     overscroll-behavior: contain;
     box-sizing: border-box;
+    animation: glOverlayFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .gl-modal-card {
     background: #FFFFFF;
@@ -637,6 +643,8 @@ const STYLES = `
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     overscroll-behavior: contain;
     box-sizing: border-box;
+    animation: glModalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
   }
   .gl-modal-handle { display: none; }
 
@@ -651,7 +659,7 @@ const STYLES = `
       border-bottom: none;
       max-height: 85dvh;
       padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
-      animation: slideUpMobile 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: glSlideUpMobile 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .gl-modal-handle {
       display: block;
@@ -662,15 +670,6 @@ const STYLES = `
       margin: 0 auto 12px auto;
       flex-shrink: 0;
     }
-  }
-
-  @keyframes slideUpMobile {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-  @keyframes scaleUpCenter {
-    from { opacity: 0; transform: scale(0.94); }
-    to { opacity: 1; transform: scale(1); }
   }
 
   .gl-empty {
@@ -750,8 +749,12 @@ export default function App() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState(todayStr().slice(0, 7));
   const [selectedDay, setSelectedDay] = useState(todayStr());
-  const [customStart, setCustomStart] = useState("");
-  const [customEnd, setCustomEnd] = useState("");
+  const [customStart, setCustomStart] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [customEnd, setCustomEnd] = useState(todayStr());
   const [sortOrder, setSortOrder] = useState("desc");
   const [showKachaModal, setShowKachaModal] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
@@ -1183,98 +1186,100 @@ export default function App() {
           {!ready ? (
             <div className="gl-empty">Loading your gold ledger…</div>
           ) : (
-            <Routes>
-              <Route path="/" element={<Navigate to="/signals" replace />} />
-              <Route
-                path="/signals"
-                element={
-                  <SellSignalsPage
-                    sellAnalysis={sellAnalysis}
-                    targetProfit={targetProfit}
-                    targetProfitPct={targetProfitPct}
-                    setTargetProfitPct={persistTargetPct}
-                    persistTarget={persistTarget}
-                    kachaPerGram={kachaPerGram}
-                    highMetrics={highMetrics}
-                    purchases={filteredPurchases}
-                    rateForDate={rateForDate}
-                    totals={totals}
-                    sortedRates={filteredRates}
-                    onOpenKachaHistory={handleOpenKachaHistory}
-                    sortOrder={sortOrder}
-                    onToggleSold={toggleSoldPurchase}
-                  />
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <DashboardPage
-                    latestRate={latestRate}
-                    kachaPerGram={kachaPerGram}
-                    highMetrics={highMetrics}
-                    sortedRates={sortedRates}
-                    rates={rates}
-                    persistRates={persistRates}
-                    totals={totals}
-                    purchaseCount={purchases.length}
-                    sellAnalysis={sellAnalysis}
-                    goToSignals={() => navigate("/signals")}
-                    goToAdd={() => navigate("/add")}
-                    onOpenKachaHistory={handleOpenKachaHistory}
-                  />
-                }
-              />
-              <Route
-                path="/add"
-                element={
-                  <AddGoldPage
-                    kachaPerGram={kachaPerGram}
-                    latestRate={latestRate}
-                    purchases={purchases}
-                    persistPurchases={persistPurchases}
-                    rateForDate={rateForDate}
-                    saving={saving}
-                    setSaving={setSaving}
-                    goToLedger={() => navigate("/purchases")}
-                  />
-                }
-              />
-              <Route
-                path="/purchases"
-                element={
-                  <PurchasesPage
-                    purchases={filteredPurchases}
-                    rateForDate={rateForDate}
-                    kachaPerGram={kachaPerGram}
-                    persistPurchases={persistPurchases}
-                    allPurchases={purchases}
-                    requestConfirm={requestConfirm}
-                    onEdit={(item) => setEditingItem(item)}
-                    onOpenKachaHistory={handleOpenKachaHistory}
-                    sortOrder={sortOrder}
-                    onToggleSold={toggleSoldPurchase}
-                  />
-                }
-              />
-              <Route path="/ledger" element={<Navigate to="/purchases" replace />} />
-              <Route
-                path="/trends"
-                element={
-                  <PriceGraphPage
-                    sortedRates={filteredRates}
-                    purchases={filteredPurchases}
-                    totals={totals}
-                    targetProfit={targetProfit}
-                    kachaPerGram={kachaPerGram}
-                    sortOrder={sortOrder}
-                    filterMode={filterMode}
-                  />
-                }
-              />
-              <Route path="/price-graph" element={<Navigate to="/trends" replace />} />
-              <Route path="*" element={<Navigate to="/signals" replace />} />
-            </Routes>
+            <div key={location.pathname} className="gl-page-transition">
+              <Routes>
+                <Route path="/" element={<Navigate to="/signals" replace />} />
+                <Route
+                  path="/signals"
+                  element={
+                    <SellSignalsPage
+                      sellAnalysis={sellAnalysis}
+                      targetProfit={targetProfit}
+                      targetProfitPct={targetProfitPct}
+                      setTargetProfitPct={persistTargetPct}
+                      persistTarget={persistTarget}
+                      kachaPerGram={kachaPerGram}
+                      highMetrics={highMetrics}
+                      purchases={filteredPurchases}
+                      rateForDate={rateForDate}
+                      totals={totals}
+                      sortedRates={filteredRates}
+                      onOpenKachaHistory={handleOpenKachaHistory}
+                      sortOrder={sortOrder}
+                      onToggleSold={toggleSoldPurchase}
+                    />
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <DashboardPage
+                      latestRate={latestRate}
+                      kachaPerGram={kachaPerGram}
+                      highMetrics={highMetrics}
+                      sortedRates={sortedRates}
+                      rates={rates}
+                      persistRates={persistRates}
+                      totals={totals}
+                      purchaseCount={purchases.length}
+                      sellAnalysis={sellAnalysis}
+                      goToSignals={() => navigate("/signals")}
+                      goToAdd={() => navigate("/add")}
+                      onOpenKachaHistory={handleOpenKachaHistory}
+                    />
+                  }
+                />
+                <Route
+                  path="/add"
+                  element={
+                    <AddGoldPage
+                      kachaPerGram={kachaPerGram}
+                      latestRate={latestRate}
+                      purchases={purchases}
+                      persistPurchases={persistPurchases}
+                      rateForDate={rateForDate}
+                      saving={saving}
+                      setSaving={setSaving}
+                      goToLedger={() => navigate("/purchases")}
+                    />
+                  }
+                />
+                <Route
+                  path="/purchases"
+                  element={
+                    <PurchasesPage
+                      purchases={filteredPurchases}
+                      rateForDate={rateForDate}
+                      kachaPerGram={kachaPerGram}
+                      persistPurchases={persistPurchases}
+                      allPurchases={purchases}
+                      requestConfirm={requestConfirm}
+                      onEdit={(item) => setEditingItem(item)}
+                      onOpenKachaHistory={handleOpenKachaHistory}
+                      sortOrder={sortOrder}
+                      onToggleSold={toggleSoldPurchase}
+                    />
+                  }
+                />
+                <Route path="/ledger" element={<Navigate to="/purchases" replace />} />
+                <Route
+                  path="/trends"
+                  element={
+                    <PriceGraphPage
+                      sortedRates={filteredRates}
+                      purchases={filteredPurchases}
+                      totals={totals}
+                      targetProfit={targetProfit}
+                      kachaPerGram={kachaPerGram}
+                      sortOrder={sortOrder}
+                      filterMode={filterMode}
+                    />
+                  }
+                />
+                <Route path="/price-graph" element={<Navigate to="/trends" replace />} />
+                <Route path="*" element={<Navigate to="/signals" replace />} />
+              </Routes>
+            </div>
           )}
         </main>
       </div>

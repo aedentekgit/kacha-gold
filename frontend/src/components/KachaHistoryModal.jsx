@@ -229,7 +229,8 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
                   padding: isMobile ? "3px 9px" : "4px 10px",
                   border: "none",
                   borderRadius: 4,
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)"
                 }}
               >
                 {tf === "7d" ? "1W" : tf === "30d" ? "1M" : tf === "1y" ? "1Y" : "All"}

@@ -121,7 +121,7 @@ export default function EditPurchaseModal({ item, isOpen, onClose, onSave }) {
             <label className="gl-input-label">Item Photo</label>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {image ? (
-                <img src={image} style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", border: "1px solid #E8DFD1" }} alt="Preview" />
+                <img src={image} className="gl-image-pop" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", border: "1px solid #E8DFD1" }} alt="Preview" />
               ) : (
                 <div style={{ width: 48, height: 48, borderRadius: 8, background: "#F5F0E6", display: "flex", alignItems: "center", justifyContent: "center", color: "#A8A29E" }}>
                   <Camera size={20} />

@@ -43,29 +43,250 @@ p, span, div, td, input, select, button, label, a, .gl-table td, .gl-value, .gl-
   font-family: 'Ubuntu', sans-serif;
 }
 
-/* Modern Sleek Custom Scrollbar */
+/* Seamless Native App Scrollbar Reset - Hide all scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-::-webkit-scrollbar-track {
-  background: #F1F5F9;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #107C41;
-}
-
-/* Firefox Custom Scrollbar */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 #F1F5F9;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
+
+.gl-no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.gl-no-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Ensure Form Controls (Date/Month inputs) have clear, readable dark text on mobile and desktop */
+input[type="date"],
+input[type="month"],
+.gl-select {
+  color-scheme: light !important;
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+  background-color: #FFFFFF !important;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="month"]::-webkit-datetime-edit,
+input[type="month"]::-webkit-datetime-edit-fields-wrapper,
+input[type="month"]::-webkit-datetime-edit-text,
+input[type="month"]::-webkit-datetime-edit-month-field,
+input[type="month"]::-webkit-datetime-edit-year-field {
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+/* Date & Month Inputs - generous width and padding to prevent text truncation on Android/mobile */
+.gl-date-input {
+  background-image: none !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+  box-sizing: border-box !important;
+}
+
+input[type="date"].gl-date-input {
+  min-width: 148px !important;
+  width: 148px !important;
+}
+
+input[type="month"].gl-date-input {
+  min-width: 175px !important;
+  width: 175px !important;
+}
+
+/* ==========================================================================
+   ANIMATION TOKENS & INTERACTIVE MOTION SYSTEM
+   ========================================================================== */
+
+/* 1. Page & Route Switching Animation */
+@keyframes glPageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gl-page-transition {
+  animation: glPageEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  width: 100%;
+}
+
+/* 2. Popups & Modal Animations */
+@keyframes glOverlayFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes glModalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.93) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes glSlideUpMobile {
+  0% {
+    opacity: 0.6;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gl-modal-overlay {
+  animation: glOverlayFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gl-modal-card {
+  animation: glModalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 640px) {
+  .gl-modal-card {
+    animation: glSlideUpMobile 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* 3. Add & Delete Motion */
+@keyframes glRowDelete {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+    background-color: transparent;
+  }
+  35% {
+    opacity: 0.6;
+    transform: translateX(-16px);
+    background-color: #FEF2F2 !important;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-42px);
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-color: transparent !important;
+  }
+}
+
+.gl-row-deleting {
+  animation: glRowDelete 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+@keyframes glEntryHighlight {
+  0% {
+    background-color: #DCFCE7 !important;
+    transform: scale(1.01);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.3);
+  }
+  70% {
+    background-color: #F0FDF4 !important;
+    transform: scale(1);
+    box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.12);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.gl-entry-highlight {
+  animation: glEntryHighlight 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes glImagePopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gl-image-pop {
+  animation: glImagePopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glAlertPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.09);
+  }
+}
+
+.gl-alert-pulse {
+  animation: glAlertPulse 1.6s ease-in-out infinite;
+}
+
+/* 4. Tactile Button & Micro-Interactions */
+.gl-btn, .gl-btn-ghost, .gl-filter-btn, .gl-tab, .gl-mobile-nav-item {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              color 0.2s ease !important;
+}
+
+.gl-btn:active, .gl-btn-ghost:active, .gl-filter-btn:active, .gl-tab:active, .gl-mobile-nav-item:active {
+  transform: scale(0.96) !important;
+}
+
+/* 5. Smooth Card Elevation */
+.gl-card, .gl-mobile-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease !important;
+}
+

@@ -72,7 +72,8 @@ export default function FilterToolbar({
                   padding: "4px",
                   boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
                   zIndex: 1000,
-                  minWidth: "150px"
+                  minWidth: "150px",
+                  animation: "glDropdownFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1)"
                 }}
               >
                 <button
@@ -126,12 +127,31 @@ export default function FilterToolbar({
       </div>
 
       {/* Bottom Filter Option Pills */}
-      <div style={{ display: "flex", gap: "6px", overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", width: "100%", paddingBottom: "4px", alignItems: "center" }}>
+      <div className="gl-no-scrollbar" style={{ display: "flex", gap: "6px", overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", width: "100%", paddingBottom: "4px", alignItems: "center" }}>
         <button className={`gl-filter-btn ${filterMode === "all" ? "active" : ""}`} onClick={() => setFilterMode("all")}>All Time</button>
         <button className={`gl-filter-btn ${filterMode === "year" ? "active" : ""}`} onClick={() => setFilterMode("year")}>Year</button>
         <button className={`gl-filter-btn ${filterMode === "month" ? "active" : ""}`} onClick={() => setFilterMode("month")}>Month</button>
         <button className={`gl-filter-btn ${filterMode === "day" ? "active" : ""}`} onClick={() => setFilterMode("day")}>Single Day</button>
-        <button className={`gl-filter-btn ${filterMode === "custom" ? "active" : ""}`} onClick={() => setFilterMode("custom")}>Custom</button>
+        <button
+          className={`gl-filter-btn ${filterMode === "custom" ? "active" : ""}`}
+          onClick={() => {
+            setFilterMode("custom");
+            if (!customStart) {
+              const d = new Date();
+              d.setDate(d.getDate() - 30);
+              setCustomStart(d.toISOString().split("T")[0]);
+            }
+            if (!customEnd) {
+              const d = new Date();
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const dd = String(d.getDate()).padStart(2, "0");
+              setCustomEnd(`${yyyy}-${mm}-${dd}`);
+            }
+          }}
+        >
+          Custom
+        </button>
 
         {filterMode === "year" && (
           <CustomSelect
@@ -143,18 +163,38 @@ export default function FilterToolbar({
         )}
 
         {filterMode === "month" && (
-          <input type="month" className="gl-select" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
+          <input
+            type="month"
+            className="gl-select gl-date-input"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+          />
         )}
 
         {filterMode === "day" && (
-          <input type="date" className="gl-select" value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} />
+          <input
+            type="date"
+            className="gl-select gl-date-input"
+            value={selectedDay}
+            onChange={(e) => setSelectedDay(e.target.value)}
+          />
         )}
 
         {filterMode === "custom" && (
           <div style={{ display: "flex", gap: "6px", alignItems: "center", flexShrink: 0 }}>
-            <input type="date" className="gl-select" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+            <input
+              type="date"
+              className="gl-select gl-date-input"
+              value={customStart}
+              onChange={(e) => setCustomStart(e.target.value)}
+            />
             <span style={{ fontSize: 12, color: "#64748B", fontWeight: 700 }}>to</span>
-            <input type="date" className="gl-select" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+            <input
+              type="date"
+              className="gl-select gl-date-input"
+              value={customEnd}
+              onChange={(e) => setCustomEnd(e.target.value)}
+            />
           </div>
         )}
       </div>

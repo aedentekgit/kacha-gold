@@ -20,18 +20,21 @@ export default function ConfirmModal({ isOpen, title, message, confirmText, conf
       <div className="gl-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="gl-modal-handle" />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-          <div style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
-            background: confirmVariant === "danger" ? "#FEF2F2" : "#FEF3C7",
-            border: `1px solid ${confirmVariant === "danger" ? "#FECACA" : "#FDE68A"}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: confirmVariant === "danger" ? "#DC2626" : "#D97706",
-            flexShrink: 0
-          }}>
+          <div
+            className="gl-alert-pulse"
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: confirmVariant === "danger" ? "#FEF2F2" : "#FEF3C7",
+              border: `1px solid ${confirmVariant === "danger" ? "#FECACA" : "#FDE68A"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: confirmVariant === "danger" ? "#DC2626" : "#D97706",
+              flexShrink: 0
+            }}
+          >
             <AlertTriangle size={22} />
           </div>
           <div>
