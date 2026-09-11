@@ -270,44 +270,18 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
 
       {/* View Purchase Details Modal */}
       {viewingPurchase && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(15, 23, 42, 0.6)",
-            backdropFilter: "blur(4px)",
-            zIndex: 2000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px"
-          }}
-          onClick={() => setViewingPurchase(null)}
-        >
-          <div
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "16px",
-              maxWidth: "480px",
-              width: "100%",
-              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1)",
-              overflow: "hidden",
-              border: "1px solid #E2E8F0",
-              animation: "glDropdownFadeIn 0.2s ease-out"
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="gl-modal-overlay" onClick={() => setViewingPurchase(null)}>
+          <div className="gl-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="gl-modal-handle" />
+
             {/* Modal Header */}
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F8FAFC" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottom: "1px solid #E2E8F0", paddingBottom: 12, flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ background: "#ECFDF5", padding: "8px", borderRadius: "10px", color: "#059669" }}>
-                  <Coins size={20} />
+                <div style={{ background: "#ECFDF5", width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", color: "#059669", flexShrink: 0 }}>
+                  <Coins size={18} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0F172A" }}>Purchase Entry Details</h3>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0F172A", fontFamily: "'Montserrat', sans-serif" }}>Purchase Entry Details</h3>
                   <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>Logged on {fmtDate(viewingPurchase.date)}</span>
                 </div>
               </div>
@@ -320,16 +294,16 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
             </div>
 
             {/* Modal Body */}
-            <div style={{ padding: "20px" }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12, paddingRight: 2, overscrollBehavior: "contain" }}>
               {/* Photo Preview if exists */}
               {viewingPurchase.thumbnail ? (
-                <div style={{ width: "100%", height: "200px", borderRadius: "12px", overflow: "hidden", background: "#F1F5F9", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #E2E8F0" }}>
+                <div style={{ width: "100%", height: "180px", borderRadius: "12px", overflow: "hidden", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #E2E8F0", flexShrink: 0 }}>
                   <img src={viewingPurchase.thumbnail} alt="Gold Purchase" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                 </div>
               ) : null}
 
               {/* Status Badge */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", padding: "10px 14px", background: viewingPurchase.isSold ? "#F1F5F9" : "#ECFDF5", borderRadius: "10px", border: viewingPurchase.isSold ? "1px solid #CBD5E1" : "1px solid #A7F3D0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: viewingPurchase.isSold ? "#F1F5F9" : "#ECFDF5", borderRadius: "10px", border: viewingPurchase.isSold ? "1px solid #CBD5E1" : "1px solid #A7F3D0" }}>
                 <span style={{ fontSize: "13px", fontWeight: 700, color: viewingPurchase.isSold ? "#475569" : "#047857" }}>Portfolio Status</span>
                 <span style={{ fontSize: "11px", fontWeight: 900, background: viewingPurchase.isSold ? "#94A3B8" : "#059669", color: "#FFFFFF", padding: "3px 10px", borderRadius: "20px" }}>
                   {viewingPurchase.isSold ? "SOLD LOT" : "ACTIVE IN PORTFOLIO"}
@@ -337,7 +311,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
               </div>
 
               {/* Grid Metrics */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 <div style={{ background: "#F8FAFC", padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0" }}>
                   <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Gold Weight</div>
                   <div style={{ fontSize: "18px", fontWeight: 800, color: "#D97706", marginTop: 2 }}>{viewingPurchase.grams.toFixed(2)} g</div>
@@ -375,7 +349,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
             </div>
 
             {/* Modal Footer Actions */}
-            <div style={{ padding: "12px 20px", borderTop: "1px solid #E2E8F0", background: "#F8FAFC", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: 14, paddingTop: 12, borderTop: "1px solid #E2E8F0", flexShrink: 0 }}>
               <button
                 onClick={() => {
                   const itemToEdit = viewingPurchase;
@@ -383,14 +357,14 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                   if (onEdit) onEdit(itemToEdit);
                 }}
                 className="gl-btn-ghost gl-btn-sm"
-                style={{ color: "#D97706", border: "1px solid #CBD5E1", background: "#FFFFFF", padding: "6px 14px", fontWeight: 700, borderRadius: 8 }}
+                style={{ color: "#D97706", border: "1px solid #CBD5E1", background: "#FFFFFF", padding: "8px 14px", fontWeight: 700, borderRadius: 8 }}
               >
                 <Pencil size={13} style={{ marginRight: 4 }} /> Edit Entry
               </button>
               <button
                 onClick={() => setViewingPurchase(null)}
                 className="gl-btn-primary gl-btn-sm"
-                style={{ padding: "6px 16px", fontWeight: 800, borderRadius: 8, background: "#059669", color: "#FFFFFF", border: "none", cursor: "pointer" }}
+                style={{ padding: "8px 18px", fontWeight: 800, borderRadius: 8, background: "#059669", color: "#FFFFFF", border: "none", cursor: "pointer" }}
               >
                 Close
               </button>

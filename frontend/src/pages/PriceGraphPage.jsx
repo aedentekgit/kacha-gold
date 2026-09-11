@@ -91,9 +91,15 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export default function PriceGraphPage({ sortedRates, purchases, totals, targetProfit, kachaPerGram, sortOrder = "desc", filterMode = "all" }) {
-  const [timeRange, setTimeRange] = useState("all");
+  const [timeRange, setTimeRange] = useState("30d");
   const [chartType, setChartType] = useState("candle"); // 'candle' (Candlesticks) by default
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
+
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear().toString());
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 640);
@@ -101,32 +107,51 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Compute available years from rate & purchase history
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    years.add(new Date().getFullYear().toString());
+    (sortedRates || []).forEach((r) => r.date && years.add(r.date.slice(0, 4)));
+    (purchases || []).forEach((p) => p.date && years.add(p.date.slice(0, 4)));
+    return Array.from(years).sort().reverse();
+  }, [sortedRates, purchases]);
+
   // Ensure rates are sorted chronologically (oldest first)
   const chronologicalRates = useMemo(() => {
     if (!sortedRates || !sortedRates.length) return [];
     return [...sortedRates].sort(compareEntriesAsc);
   }, [sortedRates]);
 
-  // Filter rates by selected timeframe
+  // Filter rates by selected timeframe / monthwise / yearwise
   const processedRates = useMemo(() => {
     if (!chronologicalRates || !chronologicalRates.length) return [];
-    if (filterMode !== "all" || timeRange === "all") return chronologicalRates;
+    if (timeRange === "all") return chronologicalRates;
 
     const now = new Date();
     const cutoff = new Date();
     if (timeRange === "1d") {
       cutoff.setDate(now.getDate() - 1);
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
+      return chronologicalRates.filter((r) => r.date >= cutoffStr);
     } else if (timeRange === "7d") {
       cutoff.setDate(now.getDate() - 7);
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
+      return chronologicalRates.filter((r) => r.date >= cutoffStr);
     } else if (timeRange === "30d") {
       cutoff.setDate(now.getDate() - 30);
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
+      return chronologicalRates.filter((r) => r.date >= cutoffStr);
     } else if (timeRange === "1y") {
       cutoff.setFullYear(now.getFullYear() - 1);
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
+      return chronologicalRates.filter((r) => r.date >= cutoffStr);
+    } else if (timeRange === "month") {
+      return chronologicalRates.filter((r) => r.date && r.date.startsWith(selectedMonth));
+    } else if (timeRange === "year") {
+      return chronologicalRates.filter((r) => r.date && r.date.startsWith(selectedYear));
     }
-
-    const cutoffStr = cutoff.toISOString().slice(0, 10);
-    return chronologicalRates.filter((r) => r.date >= cutoffStr);
-  }, [chronologicalRates, filterMode, timeRange]);
+    return chronologicalRates;
+  }, [chronologicalRates, timeRange, selectedMonth, selectedYear]);
 
   // Compute Up/Down movements and chart metrics
   const { chartData, yMin, yMax, currentPrice, priceChange, priceChangePct, stats } = useMemo(() => {
@@ -432,44 +457,212 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
             </button>
           </div>
 
-          {/* Timeframe Selector */}
+          {/* Timeframe Selector with Monthwise & Yearwise */}
           <div
             style={{
               display: "flex",
-              gap: "2px",
-              background: "#F1F5F9",
-              padding: "2px",
-              borderRadius: 6,
-              border: "1px solid #CBD5E1"
+              alignItems: "center",
+              gap: "6px",
+              flexWrap: "wrap"
             }}
           >
-            {["1d", "7d", "30d", "1y", "all"].map((tf) => (
-              <button
-                key={tf}
-                className="gl-btn-ghost gl-btn-sm"
-                onClick={() => setTimeRange(tf)}
-                style={{
-                  background: timeRange === tf ? themeColor : "transparent",
-                  color: timeRange === tf ? "#FFFFFF" : "#334155",
-                  fontWeight: 800,
-                  fontSize: 10.5,
-                  padding: "4px 8px",
-                  borderRadius: 4,
-                  border: "none",
-                  textTransform: "uppercase"
-                }}
-              >
-                {tf === "7d" ? "1W" : tf === "30d" ? "1M" : tf === "1y" ? "1Y" : tf}
-              </button>
-            ))}
+            <div
+              style={{
+                display: "flex",
+                gap: "2px",
+                background: "#F1F5F9",
+                padding: "2px",
+                borderRadius: 6,
+                border: "1px solid #CBD5E1"
+              }}
+            >
+              {[
+                { id: "1d", label: "1D" },
+                { id: "7d", label: "1W" },
+                { id: "30d", label: "1M" },
+                { id: "1y", label: "1Y" },
+                { id: "month", label: "Month" },
+                { id: "year", label: "Year" },
+                { id: "all", label: "ALL" }
+              ].map((tf) => (
+                <button
+                  key={tf.id}
+                  type="button"
+                  className="gl-btn-ghost gl-btn-sm"
+                  onClick={() => setTimeRange(tf.id)}
+                  style={{
+                    background: timeRange === tf.id ? themeColor : "transparent",
+                    color: timeRange === tf.id ? "#FFFFFF" : "#334155",
+                    fontWeight: 800,
+                    fontSize: 10.5,
+                    padding: "4px 8px",
+                    borderRadius: 4,
+                    border: "none",
+                    cursor: "pointer",
+                    textTransform: "uppercase"
+                  }}
+                >
+                  {tf.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Monthwise Picker */}
+            {timeRange === "month" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <button
+                  type="button"
+                  title="Previous Month"
+                  onClick={() => {
+                    const [y, m] = selectedMonth.split("-").map(Number);
+                    const prevDate = new Date(y, m - 2, 1);
+                    const ny = prevDate.getFullYear();
+                    const nm = String(prevDate.getMonth() + 1).padStart(2, "0");
+                    setSelectedMonth(`${ny}-${nm}`);
+                  }}
+                  style={{
+                    background: "#F1F5F9",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: 4,
+                    padding: "2px 6px",
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: "#475569"
+                  }}
+                >
+                  ◀
+                </button>
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  style={{
+                    padding: "2px 6px",
+                    fontSize: 11,
+                    height: 25,
+                    fontWeight: 700,
+                    borderRadius: 4,
+                    border: "1px solid #CBD5E1",
+                    background: "#FFFFFF",
+                    color: "#0F172A",
+                    cursor: "pointer"
+                  }}
+                />
+                <button
+                  type="button"
+                  title="Next Month"
+                  onClick={() => {
+                    const [y, m] = selectedMonth.split("-").map(Number);
+                    const nextDate = new Date(y, m, 1);
+                    const ny = nextDate.getFullYear();
+                    const nm = String(nextDate.getMonth() + 1).padStart(2, "0");
+                    setSelectedMonth(`${ny}-${nm}`);
+                  }}
+                  style={{
+                    background: "#F1F5F9",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: 4,
+                    padding: "2px 6px",
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: "#475569"
+                  }}
+                >
+                  ▶
+                </button>
+              </div>
+            )}
+
+            {/* Yearwise Selector */}
+            {timeRange === "year" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <button
+                  type="button"
+                  title="Previous Year"
+                  onClick={() => {
+                    setSelectedYear((prev) => String(Number(prev) - 1));
+                  }}
+                  style={{
+                    background: "#F1F5F9",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: 4,
+                    padding: "2px 6px",
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: "#475569"
+                  }}
+                >
+                  ◀
+                </button>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  style={{
+                    padding: "2px 8px",
+                    fontSize: 11,
+                    height: 25,
+                    fontWeight: 700,
+                    borderRadius: 4,
+                    border: "1px solid #CBD5E1",
+                    background: "#FFFFFF",
+                    color: "#0F172A",
+                    cursor: "pointer"
+                  }}
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  title="Next Year"
+                  onClick={() => {
+                    setSelectedYear((prev) => String(Number(prev) + 1));
+                  }}
+                  style={{
+                    background: "#F1F5F9",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: 4,
+                    padding: "2px 6px",
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: "#475569"
+                  }}
+                >
+                  ▶
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Chart Canvas */}
       <div style={{ width: "100%", height: isMobile ? 380 : 440, minHeight: 320 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
+        {chartData.length === 0 ? (
+          <div
+            style={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#64748B",
+              padding: "20px"
+            }}
+          >
+            <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: "#475569" }}>No price records found for this period</p>
+            <p style={{ fontSize: 12, margin: "6px 0 0 0", color: "#94A3B8" }}>Try selecting another month or year, or choose 'ALL'</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
             data={chartData}
             margin={isMobile ? { top: 15, right: 8, left: -14, bottom: 25 } : { top: 20, right: 15, left: 10, bottom: 20 }}
           >
@@ -590,6 +783,7 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
             )}
           </ComposedChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

@@ -1098,7 +1098,15 @@ export default function App() {
           <div className="gl-container gl-header">
             <div className="gl-header-brand">
               <div className="gl-brand-icon">
-                <Coins size={isMobile ? 18 : 22} color="#B8860B" />
+                <img
+                  src={`${import.meta.env.BASE_URL}logo.png`}
+                  alt="VMoney Gold Logo"
+                  style={{
+                    width: isMobile ? 31 : 34,
+                    height: isMobile ? 31 : 34,
+                    objectFit: "contain"
+                  }}
+                />
               </div>
               <div style={{ minWidth: 0 }}>
                 <h1 className="gl-brand-title">Gold Sell Signals</h1>

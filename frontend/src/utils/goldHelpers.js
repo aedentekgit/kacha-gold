@@ -148,13 +148,14 @@ export async function fetchGoodReturns22KRate() {
     return null;
   };
 
+  const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
   const apiBaseUrl = import.meta.env.VITE_API_URL || "https://kacha-gold.onrender.com/api";
   const targetUrl = 'https://www.goodreturns.in/gold-rates/';
   const endpoints = [
+    { url: `${baseUrl}/api/goodreturns/index.php`, type: 'text' },
+    { url: `${baseUrl}/api/goodreturns/`, type: 'text' },
+    { url: `${baseUrl}/api/goodreturns`, type: 'text' },
     { url: `${apiBaseUrl}/rates/goodreturns`, type: 'backend-json' },
-    { url: '/api/goodreturns/index.php', type: 'text' },
-    { url: '/api/goodreturns/', type: 'text' },
-    { url: '/api/goodreturns', type: 'text' },
     { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl) + '&t=' + Date.now(), type: 'json' },
     { url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl), type: 'text' },
     { url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl), type: 'text' }
@@ -162,7 +163,7 @@ export async function fetchGoodReturns22KRate() {
 
   for (const ep of endpoints) {
     try {
-      const res = await fetch(ep.url, { cache: 'no-cache' });
+      const res = await fetch(ep.url, { cache: 'no-cache', signal: AbortSignal.timeout(5000) });
       if (res.ok) {
         if (ep.type === 'backend-json') {
           const json = await res.json();
@@ -190,7 +191,7 @@ export async function fetchGoodReturns22KRate() {
 
   // Live Market Gold API Fallback if GoodReturns scraper is blocked
   try {
-    const res = await fetch('https://api.gold-api.com/price/XAU');
+    const res = await fetch('https://api.gold-api.com/price/XAU', { signal: AbortSignal.timeout(5000) });
     if (res.ok) {
       const data = await res.json();
       if (data && data.price) {
