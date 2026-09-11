@@ -148,8 +148,10 @@ export async function fetchGoodReturns22KRate() {
     return null;
   };
 
+  const apiBaseUrl = import.meta.env.VITE_API_URL || "https://kacha-gold.onrender.com/api";
   const targetUrl = 'https://www.goodreturns.in/gold-rates/';
   const endpoints = [
+    { url: `${apiBaseUrl}/rates/goodreturns`, type: 'backend-json' },
     { url: '/api/goodreturns/index.php', type: 'text' },
     { url: '/api/goodreturns/', type: 'text' },
     { url: '/api/goodreturns', type: 'text' },
@@ -162,16 +164,23 @@ export async function fetchGoodReturns22KRate() {
     try {
       const res = await fetch(ep.url, { cache: 'no-cache' });
       if (res.ok) {
-        let text = '';
-        if (ep.type === 'json') {
+        if (ep.type === 'backend-json') {
           const json = await res.json();
-          text = json.contents || '';
+          if (json.success && json.rate) {
+            return { rate: json.rate, source: json.source || 'GoodReturns.in', success: true };
+          }
         } else {
-          text = await res.text();
-        }
-        const rate = parseRateFromHtml(text);
-        if (rate) {
-          return { rate, source: 'GoodReturns.in', success: true };
+          let text = '';
+          if (ep.type === 'json') {
+            const json = await res.json();
+            text = json.contents || '';
+          } else {
+            text = await res.text();
+          }
+          const rate = parseRateFromHtml(text);
+          if (rate) {
+            return { rate, source: 'GoodReturns.in', success: true };
+          }
         }
       }
     } catch (e) {

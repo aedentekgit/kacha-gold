@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { X, Clock, Filter } from "lucide-react";
-import { inr, fmtDate } from "../utils/goldHelpers";
+import { inr, fmtDate, getEntryTimestamp } from "../utils/goldHelpers";
 
 const fmtCompactINR = (val) => {
   if (val === undefined || val === null || val === 0) return "₹0";
@@ -76,9 +76,17 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
 
     let base = [...fullSortedRates];
 
-    // Filter to only include dates ON or AFTER purchase date if selectedItem is present
-    if (selectedItem && selectedItem.date) {
-      base = base.filter((r) => r.date >= selectedItem.date);
+    // Filter to only include rates recorded ON or AFTER the purchase time if selectedItem is present
+    if (selectedItem) {
+      const purchaseTs = getEntryTimestamp(selectedItem);
+      if (purchaseTs > 0) {
+        base = base.filter((r) => {
+          const rTs = getEntryTimestamp(r);
+          return rTs >= purchaseTs;
+        });
+      } else if (selectedItem.date) {
+        base = base.filter((r) => r.date >= selectedItem.date);
+      }
     }
 
     if (timeFilter !== "all") {
@@ -102,6 +110,37 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
 
     return base;
   }, [fullSortedRates, selectedItem, timeFilter]);
+
+  const { displayLogs, boughtEntryId } = useMemo(() => {
+    if (!selectedItem) {
+      return { displayLogs: filteredLogs, boughtEntryId: null };
+    }
+
+    // Check if there is an existing rate matching the purchase date and buyKacha
+    const sameDateMatches = filteredLogs.filter(
+      (r) => r.date === selectedItem.date && Math.round(r.kacha || 0) === Math.round(buyKacha)
+    );
+
+    if (sameDateMatches.length > 0) {
+      // Pick the single oldest matching entry on that day as the purchase anchor
+      const targetId = sameDateMatches[sameDateMatches.length - 1].id;
+      return { displayLogs: filteredLogs, boughtEntryId: targetId };
+    }
+
+    // If no matching rate in log equals buyKacha, append a baseline purchase entry at the bottom
+    if (buyKacha) {
+      const baselineEntry = {
+        id: `purchase-base-${selectedItem.id || "lot"}`,
+        date: selectedItem.date,
+        time: selectedItem.time || "",
+        kacha: buyKacha,
+        isBaselinePurchase: true
+      };
+      return { displayLogs: [...filteredLogs, baselineEntry], boughtEntryId: baselineEntry.id };
+    }
+
+    return { displayLogs: filteredLogs, boughtEntryId: null };
+  }, [filteredLogs, selectedItem, buyKacha]);
 
   if (!isOpen) return null;
 
@@ -202,29 +241,41 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
         {/* Mobile View: Modern Mobile App Timeline Feed Cards */}
         {isMobile ? (
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 2, overscrollBehavior: "contain" }}>
-            {filteredLogs.map((entry, idx) => {
-              let prev = filteredLogs[idx + 1];
-              if (!prev) {
-                const fullIdx = fullSortedRates.findIndex((r) => r.id === entry.id);
-                if (fullIdx !== -1 && fullIdx + 1 < fullSortedRates.length) {
-                  prev = fullSortedRates[fullIdx + 1];
-                }
-              }
-
-              const isBoughtEntry = selectedItem && entry.date === selectedItem.date && (
-                entry.kacha === (selectedItem.kachaAtPurchase || selectedItem.ratePaid || buyKacha) ||
-                idx === filteredLogs.findLastIndex((r) => r.date === selectedItem.date)
-              );
-              const isPurchaseDate = selectedItem && entry.date === selectedItem.date;
+            {displayLogs.map((entry, idx) => {
+              const isBoughtEntry = entry.id === boughtEntryId || entry.isBaselinePurchase;
               const kachaVal = entry.kacha || 0;
-              const benchmarkKacha = isBoughtEntry 
-                ? (selectedItem.kachaAtPurchase || selectedItem.ratePaid || buyKacha)
-                : (prev && prev.kacha ? prev.kacha : null);
 
-              const diff = benchmarkKacha ? kachaVal - benchmarkKacha : 0;
-              const diffPct = benchmarkKacha && benchmarkKacha > 0 ? (diff / benchmarkKacha) * 100 : 0;
-              const dailyPL = diff * lotGrams;
-              const dailyPLPct = diffPct;
+              let diff = 0;
+              let diffPct = 0;
+              let lotPL = 0;
+              let lotPLPct = 0;
+
+              if (selectedItem) {
+                if (isBoughtEntry) {
+                  diff = 0;
+                  diffPct = 0;
+                  lotPL = 0;
+                  lotPLPct = 0;
+                } else {
+                  diff = kachaVal - buyKacha;
+                  diffPct = buyKacha > 0 ? (diff / buyKacha) * 100 : 0;
+                  lotPL = diff * lotGrams;
+                  lotPLPct = diffPct;
+                }
+              } else {
+                let prev = displayLogs[idx + 1];
+                if (!prev) {
+                  const fullIdx = fullSortedRates.findIndex((r) => r.id === entry.id);
+                  if (fullIdx !== -1 && fullIdx + 1 < fullSortedRates.length) {
+                    prev = fullSortedRates[fullIdx + 1];
+                  }
+                }
+                const benchmarkKacha = prev && prev.kacha ? prev.kacha : null;
+                diff = benchmarkKacha ? kachaVal - benchmarkKacha : 0;
+                diffPct = benchmarkKacha && benchmarkKacha > 0 ? (diff / benchmarkKacha) * 100 : 0;
+                lotPL = diff * lotGrams;
+                lotPLPct = diffPct;
+              }
 
               return (
                 <div
@@ -238,10 +289,13 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
                     boxShadow: "0 2px 6px rgba(0,0,0,0.03)"
                   }}
                 >
-                  {/* Top Row: Date + Bought Badge & Active Kacha Rate */}
+                  {/* Top Row: Date + Time + Bought Badge & Active Kacha Rate */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 13.5, fontWeight: 900, color: "#0F172A" }}>{fmtDate(entry.date)}</span>
+                      {entry.time && (
+                        <span style={{ fontSize: 11, color: "#64748B", fontWeight: 700 }}>{entry.time}</span>
+                      )}
                       {isBoughtEntry && (
                         <span style={{ color: "#166534", fontSize: 10, background: "#DCFCE7", border: "1px solid #86EFAC", padding: "1px 6px", borderRadius: 4, fontWeight: 900 }}>
                           BOUGHT
@@ -256,18 +310,20 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
                   {/* Bottom Row: 2-Column Metrics */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, background: "#FFFFFF", padding: "8px 10px", borderRadius: 6, border: "1px solid #E2E8F0" }}>
                     <div>
-                      <div style={{ fontSize: 10, color: "#64748B", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Rate Change</div>
+                      <div style={{ fontSize: 10, color: "#64748B", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        {selectedItem ? "Change vs Buy" : "Rate Change"}
+                      </div>
                       <div style={{ fontSize: 12.5, fontWeight: 900, color: diff > 0 ? "#15803D" : diff < 0 ? "#DC2626" : "#64748B", marginTop: 2 }}>
-                        {diff !== 0 ? `${diff > 0 ? "+" : ""}${inr(diff)} (${diff > 0 ? "+" : ""}${diffPct.toFixed(1)}%)` : "—"}
+                        {isBoughtEntry ? "—" : (diff !== 0 ? `${diff > 0 ? "+" : ""}${inr(diff)} (${diff > 0 ? "+" : ""}${diffPct.toFixed(1)}%)` : "—")}
                       </div>
                     </div>
 
                     <div>
                       <div style={{ fontSize: 10, color: "#64748B", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                        {selectedItem ? "Daily Lot P/L" : "Daily Portfolio P/L"}
+                        {selectedItem ? "Lot Profit / Loss" : "Daily Portfolio P/L"}
                       </div>
-                      <div style={{ fontSize: 12.5, fontWeight: 900, color: dailyPL > 0 ? "#15803D" : dailyPL < 0 ? "#DC2626" : "#475569", marginTop: 2 }}>
-                        {dailyPL !== 0 ? `${dailyPL > 0 ? "+" : ""}${inr(dailyPL)} (${dailyPL > 0 ? "+" : ""}${dailyPLPct.toFixed(1)}%)` : "₹0 (0.0%)"}
+                      <div style={{ fontSize: 12.5, fontWeight: 900, color: lotPL > 0 ? "#15803D" : lotPL < 0 ? "#DC2626" : "#475569", marginTop: 2 }}>
+                        {isBoughtEntry ? "₹0 (0.0%)" : (lotPL !== 0 ? `${lotPL > 0 ? "+" : ""}${inr(lotPL)} (${lotPL > 0 ? "+" : ""}${lotPLPct.toFixed(1)}%)` : "₹0 (0.0%)")}
                       </div>
                     </div>
                   </div>
@@ -283,50 +339,76 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
                 <tr>
                   <th style={{ padding: "10px 12px", fontSize: 13, whiteSpace: "nowrap" }}>Date</th>
                   <th style={{ padding: "10px 12px", fontSize: 13, whiteSpace: "nowrap" }}>Kacha Rate</th>
-                  <th style={{ padding: "10px 12px", fontSize: 13, whiteSpace: "nowrap" }}>Rate Change</th>
                   <th style={{ padding: "10px 12px", fontSize: 13, whiteSpace: "nowrap" }}>
-                    {selectedItem ? "Daily Lot P/L" : "Daily Portfolio P/L"}
+                    {selectedItem ? "Change vs Buy" : "Rate Change"}
+                  </th>
+                  <th style={{ padding: "10px 12px", fontSize: 13, whiteSpace: "nowrap" }}>
+                    {selectedItem ? "Lot Profit / Loss" : "Daily Portfolio P/L"}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredLogs.map((entry, idx) => {
-                  let prev = filteredLogs[idx + 1];
-                  if (!prev) {
-                    const fullIdx = fullSortedRates.findIndex((r) => r.id === entry.id);
-                    if (fullIdx !== -1 && fullIdx + 1 < fullSortedRates.length) {
-                      prev = fullSortedRates[fullIdx + 1];
-                    }
-                  }
-
-                  const isBoughtEntry = selectedItem && entry.date === selectedItem.date && (
-                    entry.kacha === (selectedItem.kachaAtPurchase || selectedItem.ratePaid || buyKacha) ||
-                    idx === filteredLogs.findLastIndex((r) => r.date === selectedItem.date)
-                  );
-                  const isPurchaseDate = selectedItem && entry.date === selectedItem.date;
+                {displayLogs.map((entry, idx) => {
+                  const isBoughtEntry = entry.id === boughtEntryId || entry.isBaselinePurchase;
                   const kachaVal = entry.kacha || 0;
-                  const benchmarkKacha = isBoughtEntry 
-                    ? (selectedItem.kachaAtPurchase || selectedItem.ratePaid || buyKacha)
-                    : (prev && prev.kacha ? prev.kacha : null);
 
-                  const diff = benchmarkKacha ? kachaVal - benchmarkKacha : 0;
-                  const diffPct = benchmarkKacha && benchmarkKacha > 0 ? (diff / benchmarkKacha) * 100 : 0;
-                  const dailyPL = diff * lotGrams;
-                  const dailyPLPct = diffPct;
+                  let diff = 0;
+                  let diffPct = 0;
+                  let lotPL = 0;
+                  let lotPLPct = 0;
+
+                  if (selectedItem) {
+                    if (isBoughtEntry) {
+                      diff = 0;
+                      diffPct = 0;
+                      lotPL = 0;
+                      lotPLPct = 0;
+                    } else {
+                      diff = kachaVal - buyKacha;
+                      diffPct = buyKacha > 0 ? (diff / buyKacha) * 100 : 0;
+                      lotPL = diff * lotGrams;
+                      lotPLPct = diffPct;
+                    }
+                  } else {
+                    let prev = displayLogs[idx + 1];
+                    if (!prev) {
+                      const fullIdx = fullSortedRates.findIndex((r) => r.id === entry.id);
+                      if (fullIdx !== -1 && fullIdx + 1 < fullSortedRates.length) {
+                        prev = fullSortedRates[fullIdx + 1];
+                      }
+                    }
+                    const benchmarkKacha = prev && prev.kacha ? prev.kacha : null;
+                    diff = benchmarkKacha ? kachaVal - benchmarkKacha : 0;
+                    diffPct = benchmarkKacha && benchmarkKacha > 0 ? (diff / benchmarkKacha) * 100 : 0;
+                    lotPL = diff * lotGrams;
+                    lotPLPct = diffPct;
+                  }
 
                   return (
                     <tr
                       key={entry.id || idx}
                       style={{ background: isBoughtEntry ? "#F0FDF4" : "transparent" }}
                     >
-                      <td style={{ fontWeight: 800, color: "#0F172A", fontSize: 14.5, padding: "10px 12px", whiteSpace: "nowrap" }}>
-                        {fmtDate(entry.date)} {isBoughtEntry && <span style={{ color: "#166534", fontSize: 10, background: "#DCFCE7", padding: "1px 5px", borderRadius: 3, marginLeft: 4, fontWeight: 900 }}>BOUGHT</span>}
+                      <td style={{ fontWeight: 800, color: "#0F172A", fontSize: 14, padding: "10px 12px", whiteSpace: "nowrap" }}>
+                        <span>{fmtDate(entry.date)}</span>
+                        {entry.time && (
+                          <span style={{ fontSize: 11, color: "#64748B", fontWeight: 700, marginLeft: 6 }}>
+                            {entry.time}
+                          </span>
+                        )}
+                        {isBoughtEntry && (
+                          <span style={{ color: "#166534", fontSize: 10, background: "#DCFCE7", border: "1px solid #86EFAC", padding: "1px 6px", borderRadius: 4, marginLeft: 6, fontWeight: 900 }}>
+                            BOUGHT
+                          </span>
+                        )}
                       </td>
                       <td style={{ fontWeight: 900, color: "#107C41", fontSize: 15, padding: "10px 12px", whiteSpace: "nowrap" }}>
                         {kachaVal ? inr(kachaVal) : "—"}
                       </td>
                       <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
-                        {diff !== 0 ? (
+                        {isBoughtEntry ? (
+                          <span style={{ color: "#94A3B8", fontSize: 14 }}>—</span>
+                        ) : diff !== 0 ? (
                           <span style={{ color: diff > 0 ? "#15803D" : "#B91C1C", fontWeight: 900, fontSize: 14 }}>
                             {(diff > 0 ? "+" : "") + inr(diff)} ({diff > 0 ? "+" : ""}{diffPct.toFixed(1)}%)
                           </span>
@@ -335,9 +417,11 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
                         )}
                       </td>
                       <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
-                        {dailyPL !== 0 ? (
-                          <span style={{ color: dailyPL > 0 ? "#15803D" : "#B91C1C", fontWeight: 900, fontSize: 14.5 }}>
-                            {(dailyPL > 0 ? "+" : "") + inr(dailyPL)} ({dailyPL > 0 ? "+" : ""}{dailyPLPct.toFixed(1)}%)
+                        {isBoughtEntry ? (
+                          <span style={{ color: "#475569", fontWeight: 900, fontSize: 14.5 }}>₹0 (0.0%)</span>
+                        ) : lotPL !== 0 ? (
+                          <span style={{ color: lotPL > 0 ? "#15803D" : "#B91C1C", fontWeight: 900, fontSize: 14.5 }}>
+                            {(lotPL > 0 ? "+" : "") + inr(lotPL)} ({lotPL > 0 ? "+" : ""}{lotPLPct.toFixed(1)}%)
                           </span>
                         ) : (
                           <span style={{ color: "#475569", fontWeight: 900, fontSize: 14.5 }}>₹0 (0.0%)</span>

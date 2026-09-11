@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Target, Sliders, ArrowUpRight, TrendingDown, TrendingUp, Save, Check } from "lucide-react";
 import { inr, fmtDate, compareEntriesDesc, compareEntriesAsc } from "../utils/goldHelpers";
 import TablePagination from "../components/TablePagination";
 import CustomSelect from "../components/CustomSelect";
+import EmptyState from "../components/EmptyState";
 
 export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProfitPct = 5, setTargetProfitPct, persistTarget, kachaPerGram, highMetrics, purchases, rateForDate, totals, sortedRates = [], onOpenKachaHistory, sortOrder = "desc", onToggleSold }) {
   const [pageSize, setPageSize] = useState("25");
@@ -44,18 +46,42 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
     return items.slice(start, start + ps);
   }, [items, pageSize, currentPage]);
 
+  const navigate = useNavigate();
+
   if (!purchases.length) {
-    return <div className="gl-empty">No purchases logged yet. Add gold purchases to receive sell recommendations.</div>;
+    return (
+      <EmptyState
+        icon={Target}
+        iconColor="#059669"
+        iconBg="linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%)"
+        badge="Sell Signal Engine"
+        title="No Gold Purchases Found"
+        subtitle="Log your gold purchases to calculate lot-by-lot profit margins, gain percentages, and intelligent sell signals."
+        primaryAction={{
+          label: "Add Gold Lot",
+          icon: Target,
+          onClick: () => navigate("/add")
+        }}
+        showHighlights={true}
+      />
+    );
   }
 
   if (!kachaPerGram) {
     return (
-      <div className="gl-card">
-        <div className="gl-section-title">Sell Signal Engine</div>
-        <p style={{ color: "#78716C", fontSize: 14 }}>
-          Please log today's market Kacha rate on the Dashboard to calculate sell recommendations.
-        </p>
-      </div>
+      <EmptyState
+        icon={Sliders}
+        iconColor="#B45309"
+        iconBg="linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)"
+        badge="Market Rate Required"
+        title="Active Kacha Rate Needed"
+        subtitle="Please log today's market Kacha rate on Kacha Update to calculate sell recommendations and benchmark targets."
+        primaryAction={{
+          label: "Go to Kacha Update",
+          onClick: () => navigate("/dashboard")
+        }}
+        showHighlights={false}
+      />
     );
   }
 
@@ -310,7 +336,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
               <tr style={{ cursor: "pointer" }} onClick={() => onOpenKachaHistory && onOpenKachaHistory(null)} title="Click to view overall portfolio rate history">
                 <th>Date</th>
                 <th>Item & Weight</th>
-                <th>Previous Kacha</th>
+                <th>Purchased Kacha</th>
                 <th>Current Kacha</th>
                 <th>Kacha Diff</th>
                 <th>Lot P/L</th>
@@ -319,7 +345,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
             </thead>
             <tbody>
               {paginatedItems.map((item) => {
-                const pk = item.purchaseKacha !== undefined && item.purchaseKacha !== null ? item.purchaseKacha : (item.kachaAtPurchase || activeSellRate);
+                const pk = item.purchaseKacha !== undefined && item.purchaseKacha !== null ? item.purchaseKacha : (item.kachaAtPurchase || item.ratePaid || activeSellRate);
                 const ak = item.activeKacha !== undefined && item.activeKacha !== null ? item.activeKacha : activeSellRate;
 
                 return (
@@ -401,7 +427,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
         {/* Mobile View Card List */}
         <div className="gl-mobile-cards-list">
           {paginatedItems.map((item) => {
-            const pk = item.purchaseKacha !== undefined && item.purchaseKacha !== null ? item.purchaseKacha : (item.kachaAtPurchase || activeSellRate);
+            const pk = item.purchaseKacha !== undefined && item.purchaseKacha !== null ? item.purchaseKacha : (item.kachaAtPurchase || item.ratePaid || activeSellRate);
             const ak = item.activeKacha !== undefined && item.activeKacha !== null ? item.activeKacha : activeSellRate;
 
             return (
@@ -440,7 +466,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                 </div>
 
                 <div className="gl-mobile-card-row">
-                  <span className="gl-label">Previous Kacha:</span>
+                  <span className="gl-label">Purchased Kacha:</span>
                   <span className="gl-value">{pk ? inr(pk) : "—"}</span>
                 </div>
                 <div className="gl-mobile-card-row">

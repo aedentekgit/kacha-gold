@@ -55,7 +55,13 @@ export default function ConfirmModal({ isOpen, title, message, confirmText, conf
           </button>
           <button
             className="gl-btn"
-            onClick={onConfirm}
+            onClick={async () => {
+              try {
+                if (onConfirm) await onConfirm();
+              } finally {
+                if (onClose) onClose();
+              }
+            }}
             style={{
               padding: "8px 18px",
               fontSize: 13,

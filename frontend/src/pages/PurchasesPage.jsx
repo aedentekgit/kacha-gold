@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { Coins, Pencil, Trash2, TrendingUp, TrendingDown, Eye, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Coins, Pencil, Trash2, TrendingUp, TrendingDown, Eye, X, FilterX, Plus } from "lucide-react";
 import { inr, fmtDate, compareEntriesDesc, compareEntriesAsc } from "../utils/goldHelpers";
 import TablePagination from "../components/TablePagination";
 import CustomSelect from "../components/CustomSelect";
+import EmptyState from "../components/EmptyState";
 
 export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, persistPurchases, allPurchases, requestConfirm, onEdit, sortOrder = "desc", onToggleSold }) {
+  const navigate = useNavigate();
   const [pageSize, setPageSize] = useState("25");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingPurchase, setViewingPurchase] = useState(null);
@@ -38,7 +41,27 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
   }, [sortedPurchasesList, pageSize, currentPage]);
 
   if (!purchases.length) {
-    return <div className="gl-empty">No purchases found for the selected date filter. Log gold purchases in "Add Gold".</div>;
+    const hasAnyPurchases = allPurchases && allPurchases.length > 0;
+    return (
+      <EmptyState
+        icon={hasAnyPurchases ? FilterX : Coins}
+        iconColor={hasAnyPurchases ? "#2563EB" : "#B8860B"}
+        iconBg={hasAnyPurchases ? "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)" : "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)"}
+        badge={hasAnyPurchases ? "Filter Active • No Matches" : "Gold Portfolio Ledger"}
+        title={hasAnyPurchases ? "No Purchases In Selected Date Filter" : "Your Gold Ledger is Empty"}
+        subtitle={
+          hasAnyPurchases
+            ? "There are no purchase entries recorded for this time range. Switch your date filter toolbar above to 'All Time' or select a different date range."
+            : "You haven't logged any gold purchases yet. Record your gold purchases to track lot weights, purchase prices, live margins, and sell advice."
+        }
+        primaryAction={{
+          label: hasAnyPurchases ? "Add New Gold Purchase" : "Add Your First Gold Lot",
+          icon: Plus,
+          onClick: () => navigate("/add")
+        }}
+        showHighlights={!hasAnyPurchases}
+      />
+    );
   }
 
   return (

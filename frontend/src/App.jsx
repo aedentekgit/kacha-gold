@@ -672,11 +672,26 @@ const STYLES = `
     from { opacity: 0; transform: scale(0.94); }
     to { opacity: 1; transform: scale(1); }
   }
+
+  .gl-empty {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 36px 20px;
+    text-align: center;
+    color: #64748B;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.6;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
 `;
 
 const TABS = [
-  { id: "signals", path: "/", keyTag: "F1", label: "Sell Signals", icon: Target },
-  { id: "dashboard", path: "/dashboard", keyTag: "F2", label: "Dashboard", icon: LayoutGrid },
+  { id: "signals", path: "/signals", keyTag: "F1", label: "Sell Signals", icon: Target },
+  { id: "dashboard", path: "/dashboard", keyTag: "F2", label: "Kacha Update", icon: LayoutGrid },
   { id: "add", path: "/add", keyTag: "F3", label: "Add Gold", icon: Plus },
   { id: "ledger", path: "/purchases", keyTag: "F4", label: "Purchase List", icon: Table2 },
   { id: "trends", path: "/trends", keyTag: "F5", label: "Price Graph", icon: LineChartIcon },
@@ -710,7 +725,7 @@ export default function App() {
   };
 
   const isTabActive = useCallback((tabPath) => {
-    if (tabPath === "/" && (location.pathname === "/" || location.pathname === "/signals")) return true;
+    if (tabPath === "/signals" && (location.pathname === "/signals" || location.pathname === "/")) return true;
     if (tabPath === "/dashboard" && location.pathname === "/dashboard") return true;
     if (tabPath === "/purchases" && (location.pathname === "/purchases" || location.pathname === "/ledger")) return true;
     if (tabPath === "/trends" && (location.pathname === "/trends" || location.pathname === "/price-graph")) return true;
@@ -981,6 +996,10 @@ export default function App() {
   }, [sortedRates]);
 
   const previousRateForDate = useCallback((dateStr) => {
+    if (dateStr) {
+      const prior = sortedRates.filter((r) => r.date < dateStr);
+      if (prior.length) return prior[prior.length - 1];
+    }
     if (previousKachaRate !== null) {
       return { kacha: previousKachaRate };
     }
@@ -1002,8 +1021,10 @@ export default function App() {
     let hasVal = false;
 
     activeList.forEach((p) => {
-      const prevRateObj = previousRateForDate(p.date);
-      const purchaseKacha = prevRateObj ? prevRateObj.kacha : (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null ? p.kachaAtPurchase : kachaPerGram);
+      const rateObj = rateForDate(p.date);
+      const purchaseKacha = (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
+        ? p.kachaAtPurchase
+        : (rateObj ? rateObj.kacha : (p.ratePaid || kachaPerGram));
       const activeKacha = kachaPerGram !== null ? kachaPerGram : purchaseKacha;
 
       if (activeKacha !== null && purchaseKacha !== null) {
@@ -1015,7 +1036,7 @@ export default function App() {
     const finalUnrealized = hasVal ? unrealized : null;
     const profitPercent = totalInvested && finalUnrealized !== null ? (finalUnrealized / totalInvested) * 100 : 0;
     return { totalGrams, totalInvested, avgRate, currentValue: null, unrealized: finalUnrealized, profitPercent, count: activeList.length };
-  }, [filteredPurchases, kachaPerGram, previousRateForDate]);
+  }, [filteredPurchases, kachaPerGram, rateForDate]);
 
   const sellAnalysis = useMemo(() => {
     const activePurchases = purchases.filter((p) => !p.isSold);
@@ -1027,8 +1048,10 @@ export default function App() {
     let totalSellableValue = 0;
 
     const items = activePurchases.map((p) => {
-      const prevRateObj = previousRateForDate(p.date);
-      const purchaseKacha = prevRateObj ? prevRateObj.kacha : (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null ? p.kachaAtPurchase : kachaPerGram);
+      const rateObj = rateForDate(p.date);
+      const purchaseKacha = (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
+        ? p.kachaAtPurchase
+        : (rateObj ? rateObj.kacha : (p.ratePaid || kachaPerGram));
       const activeKacha = kachaPerGram;
 
       const margin = (activeKacha !== null && purchaseKacha !== null) ? activeKacha - purchaseKacha : 0;
@@ -1060,7 +1083,7 @@ export default function App() {
       kachaPerGram,
       targetProfitPct
     };
-  }, [purchases, kachaPerGram, previousRateForDate, targetProfitPct]);
+  }, [purchases, kachaPerGram, rateForDate, targetProfitPct]);
 
   const requestConfirm = (config) => setConfirmState(config);
 
@@ -1153,8 +1176,9 @@ export default function App() {
             <div className="gl-empty">Loading your gold ledger…</div>
           ) : (
             <Routes>
+              <Route path="/" element={<Navigate to="/signals" replace />} />
               <Route
-                path="/"
+                path="/signals"
                 element={
                   <SellSignalsPage
                     sellAnalysis={sellAnalysis}
@@ -1174,7 +1198,6 @@ export default function App() {
                   />
                 }
               />
-              <Route path="/signals" element={<Navigate to="/" replace />} />
               <Route
                 path="/dashboard"
                 element={
@@ -1188,7 +1211,7 @@ export default function App() {
                     totals={totals}
                     purchaseCount={purchases.length}
                     sellAnalysis={sellAnalysis}
-                    goToSignals={() => navigate("/")}
+                    goToSignals={() => navigate("/signals")}
                     goToAdd={() => navigate("/add")}
                     onOpenKachaHistory={handleOpenKachaHistory}
                   />
@@ -1242,7 +1265,7 @@ export default function App() {
                 }
               />
               <Route path="/price-graph" element={<Navigate to="/trends" replace />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/signals" replace />} />
             </Routes>
           )}
         </main>
@@ -1281,7 +1304,12 @@ export default function App() {
         message={confirmState?.message}
         confirmText={confirmState?.confirmText}
         confirmVariant={confirmState?.confirmVariant || "danger"}
-        onConfirm={confirmState?.onConfirm}
+        onConfirm={async () => {
+          if (confirmState?.onConfirm) {
+            await confirmState.onConfirm();
+          }
+          setConfirmState(null);
+        }}
         onClose={() => setConfirmState(null)}
       />
 
