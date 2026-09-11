@@ -1,5 +1,14 @@
 {
   "appId": "com.gold.app",
-  "appName": "Gold App",
-  "webDir": "dist"
+  "appName": "VMG Kacha Gold",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#FFFFFF",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
 }

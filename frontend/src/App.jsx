@@ -1308,7 +1308,7 @@ export default function App() {
                 />
               </div>
               <div style={{ minWidth: 0 }}>
-                <h1 className="gl-brand-title">Gold Sell Signals</h1>
+                <h1 className="gl-brand-title">VMG Kacha Gold</h1>
                 <p className="gl-brand-sub">Live Rate Tracking, Price Graphs & Intelligent Sell Advice</p>
               </div>
             </div>

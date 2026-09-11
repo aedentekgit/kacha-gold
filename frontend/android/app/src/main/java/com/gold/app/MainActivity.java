@@ -15,21 +15,6 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applyLightStatusBar();
-        getWindow().getDecorView().post(this::applyLightStatusBar);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        applyLightStatusBar();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            applyLightStatusBar();
-        }
     }
 
     private void applyLightStatusBar() {

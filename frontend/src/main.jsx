@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
+import { initStatusBarObserver } from './utils/statusBar'
+
+// Initialize native status bar synchronizer for Android
+initStatusBarObserver()
 
 // If hosted at /kacha-gold (e.g. vmoneygold.com/kacha-gold), use "/kacha-gold" basename for clean URLs (no #)
 // If in Android APK (Capacitor) or local dev, use "" basename

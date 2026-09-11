@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Gold App</string>
-    <string name="title_activity_main">Gold App</string>
+    <string name="app_name">VMG Kacha Gold</string>
+    <string name="title_activity_main">VMG Kacha Gold</string>
     <string name="package_name">com.gold.app</string>
     <string name="custom_url_scheme">com.gold.app</string>
 </resources>
