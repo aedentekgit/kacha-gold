@@ -6,7 +6,11 @@ import {
   LayoutGrid,
   Table2,
   LineChart as LineChartIcon,
-  Target
+  Target,
+  Settings as SettingsIcon,
+  Lock,
+  MoreHorizontal,
+  X
 } from "lucide-react";
 
 import {
@@ -27,12 +31,14 @@ import ConfirmModal from "./components/ConfirmModal";
 import EditPurchaseModal from "./components/EditPurchaseModal";
 import KachaHistoryModal from "./components/KachaHistoryModal";
 import FilterToolbar from "./components/FilterToolbar";
+import PinLockScreen from "./components/PinLockScreen";
 
 import DashboardPage from "./pages/DashboardPage";
 import SellSignalsPage from "./pages/SellSignalsPage";
 import AddGoldPage from "./pages/AddGoldPage";
 import PurchasesPage from "./pages/PurchasesPage";
 import PriceGraphPage from "./pages/PriceGraphPage";
+import SettingsPage from "./pages/SettingsPage";
 import apiService from "./api/apiService";
 
 const INITIAL_RATES = [];
@@ -553,6 +559,114 @@ const STYLES = `
     background: #ECFDF5;
   }
 
+  /* Mobile More Drawer Sheet */
+  .gl-mobile-more-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 10001;
+    display: flex;
+    align-items: flex-end;
+    animation: fadeIn 0.18s ease-out;
+  }
+  .gl-mobile-more-sheet {
+    width: 100%;
+    background: #FFFFFF;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    padding: 12px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px;
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.12);
+    animation: glSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .gl-mobile-more-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 4px;
+    background: #CBD5E1;
+    margin: 0 auto 12px auto;
+  }
+  .gl-mobile-more-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .gl-mobile-more-header h4 {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0F172A;
+  }
+  .gl-mobile-more-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+  }
+  .gl-mobile-more-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .gl-mobile-more-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: all 0.15s ease;
+  }
+  .gl-mobile-more-item:active {
+    transform: scale(0.98);
+    background: #F1F5F9;
+  }
+  .gl-mobile-more-item.active {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+  }
+  .gl-more-icon-wrap {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #475569;
+    background: transparent;
+  }
+  .gl-mobile-more-item.active .gl-more-icon-wrap {
+    color: #059669;
+  }
+  .gl-more-item-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .gl-more-item-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 2px;
+  }
+  .gl-more-item-sub {
+    font-size: 12px;
+    color: #64748B;
+  }
+
   /* Mobile Cards for Lot & Purchase Lists */
   .gl-mobile-card {
     background: #FFFFFF;
@@ -595,7 +709,7 @@ const STYLES = `
 
   @media (max-width: 640px) {
     .gl-root { padding-bottom: 0; }
-    .gl-body-scroll-wrap { padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); }
+    .gl-body-scroll-wrap { padding-bottom: calc(105px + env(safe-area-inset-bottom, 0px)); }
     .gl-container { padding: 0 12px; }
 
     .gl-header-wrap { padding: calc(14px + env(safe-area-inset-top, 0px)) 0 0; }
@@ -694,6 +808,14 @@ const TABS = [
   { id: "add", path: "/add", keyTag: "F3", label: "Add Gold", icon: Plus },
   { id: "ledger", path: "/purchases", keyTag: "F4", label: "Purchase List", icon: Table2 },
   { id: "trends", path: "/trends", keyTag: "F5", label: "Price Graph", icon: LineChartIcon },
+  { id: "settings", path: "/settings", keyTag: "F6", label: "Settings", icon: SettingsIcon },
+];
+
+const MOBILE_MAIN_TABS = [
+  { id: "signals", path: "/signals", label: "Sell Signals", icon: Target },
+  { id: "dashboard", path: "/dashboard", label: "Kacha Update", icon: LayoutGrid },
+  { id: "add", path: "/add", label: "Add Gold", icon: Plus },
+  { id: "ledger", path: "/purchases", label: "Purchase List", icon: Table2 },
 ];
 
 export default function App() {
@@ -707,7 +829,55 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [showMobileMore, setShowMobileMore] = useState(false);
   const scrollRef = useRef(null);
+
+  // Security PIN & Authentication State
+  const [appPin, setAppPin] = useState(() => {
+    const saved = localStorage.getItem("gl_app_pin");
+    if (saved && saved.length === 6) return saved;
+    return "123456";
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem("gl_pin_authenticated") === "true";
+  });
+
+  const handlePinSuccess = useCallback(() => {
+    setIsAuthenticated(true);
+    sessionStorage.setItem("gl_pin_authenticated", "true");
+  }, []);
+
+  const handleLockApp = useCallback(() => {
+    setShowMobileMore(false);
+    setConfirmState({
+      title: "Lock Application?",
+      message: "Are you sure you want to lock the app? You will need your 6-digit PIN to access it again.",
+      confirmText: "Lock App",
+      confirmVariant: "danger",
+      icon: Lock,
+      onConfirm: () => {
+        setIsAuthenticated(false);
+        sessionStorage.removeItem("gl_pin_authenticated");
+      }
+    });
+  }, []);
+
+  const handleUpdatePin = useCallback(async (newPin) => {
+    const clean = String(newPin).trim();
+    await apiService.updateSettings({ appPin: clean });
+    setAppPin(clean);
+    localStorage.setItem("gl_app_pin", clean);
+  }, []);
+
+  const handleUpdateTargets = useCallback(async (newMargin, newPct) => {
+    const validMargin = Math.max(0, parseFloat(newMargin) || 0);
+    const validPct = Math.max(0, parseFloat(newPct) || 0);
+    setTargetProfit(validMargin);
+    setTargetProfitPct(validPct);
+    localStorage.setItem("gl_target_profit", validMargin.toString());
+    localStorage.setItem("gl_target_profit_pct", validPct.toString());
+    await apiService.updateSettings({ targetProfit: validMargin, targetProfitPct: validPct });
+  }, []);
 
   const persistTargetPct = async (newPct) => {
     const validPct = Math.max(0, parseFloat(newPct) || 0);
@@ -728,6 +898,7 @@ export default function App() {
     if (tabPath === "/dashboard" && location.pathname === "/dashboard") return true;
     if (tabPath === "/purchases" && (location.pathname === "/purchases" || location.pathname === "/ledger")) return true;
     if (tabPath === "/trends" && (location.pathname === "/trends" || location.pathname === "/price-graph")) return true;
+    if (tabPath === "/settings" && location.pathname === "/settings") return true;
     return location.pathname === tabPath;
   }, [location.pathname]);
 
@@ -789,6 +960,11 @@ export default function App() {
         if (fetchedSettings) {
           if (fetchedSettings.targetProfit !== undefined) t = fetchedSettings.targetProfit;
           if (fetchedSettings.targetProfitPct !== undefined) tPct = fetchedSettings.targetProfitPct;
+          if (fetchedSettings.appPin || fetchedSettings.pin) {
+            const fetchedPin = String(fetchedSettings.appPin || fetchedSettings.pin).trim();
+            setAppPin(fetchedPin);
+            localStorage.setItem("gl_app_pin", fetchedPin);
+          }
         }
 
         // Clean up any auto-synced entries so only user-explicitly saved rates exist
@@ -1009,9 +1185,25 @@ export default function App() {
     return sortedRates.length >= 2 ? sortedRates[sortedRates.length - 2] : null;
   }, [sortedRates, previousKachaRate]);
 
-  const toggleSoldPurchase = useCallback(async (id) => {
-    const next = purchases.map((p) => (p.id === id ? { ...p, isSold: !p.isSold } : p));
-    await persistPurchases(next);
+  const toggleSoldPurchase = useCallback((id) => {
+    const target = purchases.find((p) => p.id === id);
+    if (!target) return;
+
+    const willBeSold = !target.isSold;
+    const lotDesc = target.grams ? `${target.grams.toFixed(2)}g` : "this lot";
+
+    setConfirmState({
+      title: willBeSold ? "Mark Lot as Sold?" : "Restore Lot to Active?",
+      message: willBeSold
+        ? `Are you sure you want to mark this purchase (${lotDesc}) as Sold? It will be archived and removed from active Sell Signals.`
+        : `Are you sure you want to restore this purchase (${lotDesc}) back to Active? It will be included in your active gold portfolio and Sell Signals.`,
+      confirmText: willBeSold ? "Mark as Sold" : "Restore to Active",
+      confirmVariant: willBeSold ? "danger" : "primary",
+      onConfirm: async () => {
+        const next = purchases.map((p) => (p.id === id ? { ...p, isSold: willBeSold } : p));
+        await persistPurchases(next);
+      }
+    });
   }, [purchases, persistPurchases]);
 
   const totals = useMemo(() => {
@@ -1090,6 +1282,10 @@ export default function App() {
 
   const requestConfirm = (config) => setConfirmState(config);
 
+  if (!isAuthenticated) {
+    return <PinLockScreen expectedPin={appPin} onSuccess={handlePinSuccess} />;
+  }
+
   return (
     <div className="gl-root">
       <style>{STYLES}</style>
@@ -1117,23 +1313,60 @@ export default function App() {
               </div>
             </div>
 
-            <div className="gl-quick-stat-strip">
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Board (22K)</div>
-                <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#0F172A" }}>{latestRate ? inr(latestRate.board) : "—"}</div>
-              </div>
-              <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Kacha</div>
-                <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#B45309" }}>{kachaPerGram ? inr(kachaPerGram) : "—"}</div>
-              </div>
-              <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Portfolio P/L</div>
-                <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: totals.unrealized >= 0 ? "#15803D" : "#DC2626" }}>
-                  {totals.unrealized !== null ? (isMobile ? fmtCompactINR(totals.unrealized) : ((totals.unrealized >= 0 ? "+" : "") + inr(totals.unrealized))) : "—"}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="gl-quick-stat-strip">
+                <div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Board (22K)</div>
+                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#0F172A" }}>{latestRate ? inr(latestRate.board) : "—"}</div>
+                </div>
+                <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
+                <div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Kacha</div>
+                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#B45309" }}>{kachaPerGram ? inr(kachaPerGram) : "—"}</div>
+                </div>
+                <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
+                <div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Portfolio P/L</div>
+                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: totals.unrealized >= 0 ? "#15803D" : "#DC2626" }}>
+                    {totals.unrealized !== null ? (isMobile ? fmtCompactINR(totals.unrealized) : ((totals.unrealized >= 0 ? "+" : "") + inr(totals.unrealized))) : "—"}
+                  </div>
                 </div>
               </div>
+
+              {/* Lock Button (Always positioned on top right corner on both mobile and desktop) */}
+              <button
+                type="button"
+                onClick={handleLockApp}
+                title="Lock Application"
+                className="gl-header-lock-btn"
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E2E8F0",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  color: "#475569",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+                  transition: "all 0.15s ease",
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#DC2626";
+                  e.currentTarget.style.borderColor = "#FECACA";
+                  e.currentTarget.style.backgroundColor = "#FEF2F2";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#475569";
+                  e.currentTarget.style.borderColor = "#E2E8F0";
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                }}
+              >
+                <Lock size={16} />
+              </button>
             </div>
           </div>
 
@@ -1277,6 +1510,19 @@ export default function App() {
                   }
                 />
                 <Route path="/price-graph" element={<Navigate to="/trends" replace />} />
+                <Route
+                  path="/settings"
+                  element={
+                    <SettingsPage
+                      currentPin={appPin}
+                      onUpdatePin={handleUpdatePin}
+                      onLockApp={handleLockApp}
+                      targetProfit={targetProfit}
+                      targetProfitPct={targetProfitPct}
+                      onUpdateTargets={handleUpdateTargets}
+                    />
+                  }
+                />
                 <Route path="*" element={<Navigate to="/signals" replace />} />
               </Routes>
             </div>
@@ -1284,19 +1530,119 @@ export default function App() {
         </main>
       </div>
 
-      {/* Mobile Sticky Navigation */}
+      {/* Mobile Sticky Navigation (5 Items) */}
       <nav className="gl-mobile-bottom-bar">
-        {TABS.map((t) => {
+        {MOBILE_MAIN_TABS.map((t) => {
           const Icon = t.icon;
           const active = isTabActive(t.path);
           return (
-            <button key={t.id} className={`gl-mobile-nav-item ${active ? "active" : ""}`} onClick={() => navigate(t.path)}>
+            <button
+              key={t.id}
+              className={`gl-mobile-nav-item ${active ? "active" : ""}`}
+              onClick={() => {
+                setShowMobileMore(false);
+                navigate(t.path);
+              }}
+            >
               <Icon size={19} color={active ? "#107C41" : "#475569"} />
               <span>{t.label}</span>
             </button>
           );
         })}
+
+        {/* 5th Menu: More Options */}
+        {(() => {
+          const isMoreActive = isTabActive("/trends") || isTabActive("/settings");
+          return (
+            <button
+              key="more"
+              className={`gl-mobile-nav-item ${isMoreActive ? "active" : ""}`}
+              onClick={() => setShowMobileMore((prev) => !prev)}
+            >
+              <MoreHorizontal size={20} color={isMoreActive ? "#107C41" : "#475569"} />
+              <span>More</span>
+            </button>
+          );
+        })()}
       </nav>
+
+      {/* Mobile More Bottom Sheet */}
+      {showMobileMore && (
+        <div
+          className="gl-mobile-more-backdrop"
+          onClick={() => setShowMobileMore(false)}
+        >
+          <div
+            className="gl-mobile-more-sheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="gl-mobile-more-handle" />
+            <div className="gl-mobile-more-header">
+              <h4>More Options</h4>
+              <button
+                type="button"
+                className="gl-mobile-more-close"
+                onClick={() => setShowMobileMore(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="gl-mobile-more-list">
+              <button
+                type="button"
+                className={`gl-mobile-more-item ${isTabActive("/trends") ? "active" : ""}`}
+                onClick={() => {
+                  setShowMobileMore(false);
+                  navigate("/trends");
+                }}
+              >
+                <div className="gl-more-icon-wrap">
+                  <LineChartIcon size={20} color={isTabActive("/trends") ? "#059669" : "#475569"} />
+                </div>
+                <div className="gl-more-item-text">
+                  <div className="gl-more-item-title">Price Graph</div>
+                  <div className="gl-more-item-sub">Trends, price movement & historical rates</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`gl-mobile-more-item ${isTabActive("/settings") ? "active" : ""}`}
+                onClick={() => {
+                  setShowMobileMore(false);
+                  navigate("/settings");
+                }}
+              >
+                <div className="gl-more-icon-wrap">
+                  <SettingsIcon size={20} color={isTabActive("/settings") ? "#059669" : "#475569"} />
+                </div>
+                <div className="gl-more-item-text">
+                  <div className="gl-more-item-title">Settings & PIN</div>
+                  <div className="gl-more-item-sub">Change 6-digit PIN, targets & DB sync</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className="gl-mobile-more-item"
+                onClick={() => {
+                  setShowMobileMore(false);
+                  handleLockApp();
+                }}
+              >
+                <div className="gl-more-icon-wrap">
+                  <Lock size={19} color="#475569" />
+                </div>
+                <div className="gl-more-item-text">
+                  <div className="gl-more-item-title">Lock Application</div>
+                  <div className="gl-more-item-sub">Instantly lock and return to PIN screen</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Screen-Wide Root Modals */}
       <KachaHistoryModal
@@ -1317,6 +1663,7 @@ export default function App() {
         message={confirmState?.message}
         confirmText={confirmState?.confirmText}
         confirmVariant={confirmState?.confirmVariant || "danger"}
+        icon={confirmState?.icon}
         onConfirm={async () => {
           if (confirmState?.onConfirm) {
             await confirmState.onConfirm();

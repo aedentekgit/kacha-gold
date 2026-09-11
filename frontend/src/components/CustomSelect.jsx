@@ -8,6 +8,7 @@ export default function CustomSelect({
   prefix = null,
   placeholder = "Select...",
   size = "md",
+  dropUp = false,
   style = {},
   className = ""
 }) {
@@ -78,7 +79,9 @@ export default function CustomSelect({
           size={isSmall ? 13 : 15}
           color={isOpen ? "#059669" : "#64748B"}
           style={{
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transform: isOpen
+              ? (dropUp ? "rotate(0deg)" : "rotate(180deg)")
+              : (dropUp ? "rotate(180deg)" : "rotate(0deg)"),
             transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
             flexShrink: 0
           }}
@@ -90,15 +93,23 @@ export default function CustomSelect({
           className="gl-custom-select-menu"
           style={{
             position: "absolute",
-            right: 0,
-            top: "calc(100% + 4px)",
+            left: 0,
+            ...(dropUp
+              ? {
+                  bottom: "calc(100% + 6px)",
+                  boxShadow:
+                    "0 -10px 25px -5px rgba(15, 23, 42, 0.15), 0 -8px 10px -6px rgba(15, 23, 42, 0.06)"
+                }
+              : {
+                  top: "calc(100% + 6px)",
+                  boxShadow:
+                    "0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04)"
+                }),
             background: "#FFFFFF",
             border: "1px solid #E2E8F0",
             borderRadius: "10px",
             padding: "4px",
-            boxShadow:
-              "0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04)",
-            zIndex: 1000,
+            zIndex: 10005,
             minWidth: "100%",
             width: "max-content",
             maxHeight: "220px",

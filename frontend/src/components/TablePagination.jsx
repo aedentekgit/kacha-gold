@@ -34,6 +34,7 @@ export default function TablePagination({ totalItems, currentPage, setCurrentPag
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <CustomSelect
             prefix="Show:"
+            dropUp={true}
             options={[
               { value: "25", label: "25 per page" },
               { value: "50", label: "50 per page" },

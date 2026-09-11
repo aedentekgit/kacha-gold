@@ -3,6 +3,7 @@
   "purchases": [],
   "settings": {
     "targetProfit": 250,
-    "targetProfitPct": 5
+    "targetProfitPct": 5,
+    "appPin": "123456"
   }
 }

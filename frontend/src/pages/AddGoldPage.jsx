@@ -57,7 +57,7 @@ export default function AddGoldPage({ kachaPerGram, latestRate, purchases, persi
         <div className="gl-section-title" style={{ marginBottom: 14, fontSize: 16 }}>Item Photo</div>
         {image ? (
           <div>
-            <img src={image} className="gl-preview-img" alt="Gold item preview" style={{ maxHeight: 220, borderRadius: 6, marginBottom: 10 }} />
+            <img src={image} className="gl-preview-img gl-image-pop" alt="Gold item preview" style={{ maxHeight: 220, borderRadius: 6, marginBottom: 10 }} />
             <button className="gl-btn-ghost gl-btn-sm" onClick={() => setImage(null)} style={{ padding: "6px 12px", fontSize: 13 }}>
               <X size={14} /> Remove Photo
             </button>
@@ -109,8 +109,17 @@ export default function AddGoldPage({ kachaPerGram, latestRate, purchases, persi
 
         {error && <p style={{ color: "#B91C1C", fontSize: 13.5, fontWeight: 700, marginTop: 12 }}>{error}</p>}
 
-        <button className="gl-btn" onClick={submit} disabled={saving} style={{ width: "100%", justifyContent: "center", padding: "13px 20px", fontSize: 15, fontWeight: 800, marginTop: 22, background: saving ? "#E2E8F0" : "#107C41" }}>
-          <Check size={18} /> {saving ? "Saving Gold Purchase…" : "Save Purchase Entry"}
+        <button className="gl-btn" onClick={submit} disabled={saving} style={{ width: "100%", justifyContent: "center", padding: "13px 20px", fontSize: 15, fontWeight: 800, marginTop: 22, background: saving ? "#64748B" : "#107C41", cursor: saving ? "wait" : "pointer" }}>
+          {saving ? (
+            <>
+              <div className="gl-spin" style={{ width: 16, height: 16, border: "2px solid #FFFFFF", borderTopColor: "transparent", borderRadius: "50%" }} />
+              Saving Gold Purchase…
+            </>
+          ) : (
+            <>
+              <Check size={18} /> Save Purchase Entry
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -31,6 +31,8 @@ export default function DashboardPage({
   const [fetchingRate, setFetchingRate] = useState(false);
   const [fetchMsg, setFetchMsg] = useState(null);
   const [showLogs, setShowLogs] = useState(false);
+  const [lastAddedRateId, setLastAddedRateId] = useState(null);
+  const [deletingRateId, setDeletingRateId] = useState(null);
 
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
 
@@ -63,19 +65,27 @@ export default function DashboardPage({
   const submitRate = async () => {
     if (!board || !kacha) return;
     setBusy(true);
+    const newId = uid("rate");
     const entry = {
-      id: uid("rate"), date: todayStr(), time: nowTime(),
+      id: newId, date: todayStr(), time: nowTime(),
       board: parseFloat(board), kacha: parseFloat(kacha), createdAt: Date.now(),
       userLogged: true
     };
     await persistRates([...rates, entry]);
     setBoard(""); setKacha("");
     setBusy(false);
+    setLastAddedRateId(newId);
+    setShowLogs(true);
+    setTimeout(() => setLastAddedRateId(null), 2500);
   };
 
-  const deleteRateEntry = async (id) => {
-    const next = rates.filter((r) => r.id !== id);
-    await persistRates(next);
+  const deleteRateEntry = (id) => {
+    setDeletingRateId(id);
+    setTimeout(async () => {
+      const next = rates.filter((r) => r.id !== id);
+      await persistRates(next);
+      setDeletingRateId(null);
+    }, 280);
   };
 
   return (
@@ -272,7 +282,21 @@ export default function DashboardPage({
                 {showLogs && (
                   <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8, maxHeight: 180, overflowY: "auto" }}>
                     {todayEntries.map((e) => (
-                      <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "8px 12px", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8 }}>
+                      <div
+                        key={e.id}
+                        className={`${lastAddedRateId === e.id ? "gl-entry-highlight" : ""} ${deletingRateId === e.id ? "gl-row-deleting" : ""}`}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: 12,
+                          padding: "8px 12px",
+                          background: "#F8FAFC",
+                          border: "1px solid #E2E8F0",
+                          borderRadius: 8,
+                          transition: "all 0.25s ease"
+                        }}
+                      >
                         <span style={{ fontWeight: 700, color: "#0F172A" }}>{e.time}</span>
                         <span>Board <strong style={{ color: "#D97706" }}>{inr(e.board)}</strong> · Kacha <strong style={{ color: "#059669" }}>{inr(e.kacha)}</strong></span>
                         <button className="gl-btn-ghost gl-btn-sm" onClick={() => deleteRateEntry(e.id)} style={{ padding: "2px 6px", color: "#DC2626", borderColor: "#FCA5A5", background: "#FEF2F2" }}>

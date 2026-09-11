@@ -11,6 +11,15 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
   const [pageSize, setPageSize] = useState("25");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingPurchase, setViewingPurchase] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const performDelete = (p) => {
+    setDeletingId(p.id);
+    setTimeout(() => {
+      persistPurchases(allPurchases.filter((x) => String(x.id) !== String(p.id)));
+      setDeletingId(null);
+    }, 280);
+  };
 
   const deleteItem = (p) => {
     if (requestConfirm) {
@@ -19,12 +28,10 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
         message: `Are you sure you want to delete this purchase entry of ${p.grams.toFixed(2)}g (${inr(p.ratePaid)}/g)? This entry will be permanently removed.`,
         confirmText: "Delete Entry",
         confirmVariant: "danger",
-        onConfirm: () => {
-          persistPurchases(allPurchases.filter((x) => String(x.id) !== String(p.id)));
-        }
+        onConfirm: () => performDelete(p)
       });
     } else if (window.confirm("Delete this purchase entry?")) {
-      persistPurchases(allPurchases.filter((x) => String(x.id) !== String(p.id)));
+      performDelete(p);
     }
   };
 
@@ -106,7 +113,15 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
               const displayBuyPrice = p.overallPrice ? p.overallPrice : (p.grams && p.ratePaid ? Math.round(p.grams * (p.ratePaid > 50000 ? p.ratePaid / 10 : p.ratePaid)) : 0);
 
               return (
-                <tr key={p.id} style={{ background: p.isSold ? "#F8FAFC" : "transparent", opacity: p.isSold ? 0.75 : 1 }}>
+                <tr
+                  key={p.id}
+                  className={deletingId === p.id ? "gl-row-deleting" : ""}
+                  style={{
+                    background: p.isSold ? "#F8FAFC" : "transparent",
+                    opacity: p.isSold ? 0.75 : 1,
+                    transition: "background-color 0.25s ease, opacity 0.25s ease"
+                  }}
+                >
                   <td style={{ cursor: "pointer" }} onClick={() => setViewingPurchase(p)} title="Click to view details">
                     {p.thumbnail ? (
                       <img src={p.thumbnail} className="gl-thumb" alt="Gold photo" />
@@ -145,7 +160,10 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                       {p.isSold ? (
                         <button
                           className="gl-btn-ghost gl-btn-sm"
-                          onClick={() => onToggleSold && onToggleSold(p.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSold && onToggleSold(p.id);
+                          }}
                           style={{ color: "#DC2626", borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 6 }}
                           title="Click to mark back as Active"
                         >
@@ -154,7 +172,10 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                       ) : (
                         <button
                           className="gl-btn-ghost gl-btn-sm"
-                          onClick={() => onToggleSold && onToggleSold(p.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSold && onToggleSold(p.id);
+                          }}
                           style={{ color: "#DC2626", borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 6 }}
                           title="Mark lot as Sold (removes from Sell Signals)"
                         >
@@ -192,7 +213,14 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
           const displayBuyPrice = p.overallPrice ? p.overallPrice : (p.grams && p.ratePaid ? Math.round(p.grams * (p.ratePaid > 50000 ? p.ratePaid / 10 : p.ratePaid)) : 0);
 
           return (
-            <div key={p.id} className="gl-mobile-card" style={{ opacity: p.isSold ? 0.75 : 1 }}>
+            <div
+              key={p.id}
+              className={`gl-mobile-card ${deletingId === p.id ? "gl-row-deleting" : ""}`}
+              style={{
+                opacity: p.isSold ? 0.75 : 1,
+                transition: "background-color 0.25s ease, opacity 0.25s ease"
+              }}
+            >
               <div className="gl-mobile-card-header">
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", cursor: "pointer" }} onClick={() => setViewingPurchase(p)}>
                   {p.thumbnail ? (
@@ -224,7 +252,10 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                   {p.isSold ? (
                     <button
                       className="gl-btn-ghost gl-btn-sm"
-                      onClick={() => onToggleSold && onToggleSold(p.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSold && onToggleSold(p.id);
+                      }}
                       style={{ color: "#DC2626", borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 6 }}
                     >
                       SOLD
@@ -232,7 +263,10 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                   ) : (
                     <button
                       className="gl-btn-ghost gl-btn-sm"
-                      onClick={() => onToggleSold && onToggleSold(p.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSold && onToggleSold(p.id);
+                      }}
                       style={{ color: "#DC2626", borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 6 }}
                     >
                       Sold

@@ -19,6 +19,7 @@ const initialDb = {
   settings: {
     targetProfit: 250,
     targetProfitPct: 5,
+    appPin: "123456",
   },
 };
 
@@ -441,17 +442,30 @@ export const db = {
     if (useMySQL && pool) {
       try {
         const [rows] = await pool.query("SELECT * FROM settings");
-        const settings = { targetProfit: 250, targetProfitPct: 5 };
+        const settings = { targetProfit: 250, targetProfitPct: 5, appPin: "123456" };
         for (const row of rows) {
-          const val = Number(row.value);
-          settings[row.key] = isNaN(val) ? row.value : val;
+          if (row.key.toLowerCase().includes("pin")) {
+            settings[row.key] = String(row.value);
+          } else {
+            const val = Number(row.value);
+            settings[row.key] = isNaN(val) ? row.value : val;
+          }
+        }
+        if (!settings.appPin && settings.pin) {
+          settings.appPin = String(settings.pin);
         }
         return settings;
       } catch (err) {
         console.error("MySQL getSettings error:", err.message);
       }
     }
-    return readJsonDb().settings || { targetProfit: 250, targetProfitPct: 5 };
+    const jsonSettings = readJsonDb().settings || {};
+    return {
+      targetProfit: 250,
+      targetProfitPct: 5,
+      appPin: "123456",
+      ...jsonSettings,
+    };
   },
 
   async updateSettings(updatedSettings) {
