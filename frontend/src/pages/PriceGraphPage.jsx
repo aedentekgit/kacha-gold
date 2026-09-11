@@ -5,7 +5,6 @@ import {
   ComposedChart,
   Area,
   Bar,
-  Scatter,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -18,11 +17,7 @@ import {
   TrendingDown,
   LineChart,
   BarChart2,
-  Plus,
-  ArrowUpRight,
-  ArrowDownRight,
-  Activity,
-  Coins
+  Plus
 } from "lucide-react";
 import EmptyState from "../components/EmptyState";
 
@@ -89,13 +84,6 @@ const CustomTooltip = ({ active, payload }) => {
             </span>
           </div>
         )}
-
-        {data.boughtKacha ? (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 6, paddingTop: 6, borderTop: "1px dashed #334155" }}>
-            <span style={{ color: "#FDE047" }}>Bought Kacha:</span>
-            <strong style={{ color: "#FDE047", fontWeight: 900 }}>{inr(data.boughtKacha)}</strong>
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -104,8 +92,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 export default function PriceGraphPage({ sortedRates, purchases, totals, targetProfit, kachaPerGram, sortOrder = "desc", filterMode = "all" }) {
   const [timeRange, setTimeRange] = useState("all");
-  const [chartType, setChartType] = useState("area"); // 'area' (Trend Line) is default for clear ups and downs
-  const [showPurchases, setShowPurchases] = useState(false); // Clean rate curve by default
+  const [chartType, setChartType] = useState("candle"); // 'candle' (Candlesticks) by default
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
 
   useEffect(() => {
@@ -215,15 +202,7 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
       const high = Math.max(open, close) + Math.round(spread * 0.5);
       const low = Math.min(open, close) - Math.round(spread * 0.5);
 
-      const matchingPurchases = purchases.filter((p) => p.date === dateStr);
-      const buyRateOnDate = matchingPurchases.length
-        ? Math.round(
-            matchingPurchases.reduce((s, p) => s + (p.kachaAtPurchase || p.ratePaid || 0), 0) /
-              matchingPurchases.length
-          )
-        : null;
-
-      [open, close, high, low, buyRateOnDate].forEach((v) => {
+      [open, close, high, low].forEach((v) => {
         if (v && v > 50000) {
           if (v < globalMin) globalMin = v;
           if (v > globalMax) globalMax = v;
@@ -248,9 +227,7 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
         low,
         close,
         candleBody: [Math.min(open, close), Math.max(open, close)],
-        isGreen,
-        boughtKacha: buyRateOnDate,
-        purchaseCount: matchingPurchases.length
+        isGreen
       };
     });
 
@@ -273,7 +250,8 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
       spread: isFinite(globalMax) && isFinite(globalMin) ? globalMax - globalMin : 0
     };
 
-    const finalChartData = sortOrder === "desc" ? [...data].reverse() : data;
+    // Charts always display chronologically from left (oldest) to right (newest)
+    const finalChartData = data;
 
     return {
       chartData: finalChartData,
@@ -284,7 +262,7 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
       priceChangePct: pct,
       stats: statsObj
     };
-  }, [processedRates, purchases, sortOrder]);
+  }, [processedRates]);
 
   const navigate = useNavigate();
 
@@ -392,82 +370,6 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
               </span>
             </div>
           </div>
-
-          {/* Up/Down Stat Pills Strip */}
-          <div
-            style={{
-              display: "flex",
-              gap: isMobile ? 6 : 10,
-              marginTop: 8,
-              flexWrap: "wrap",
-              fontSize: isMobile ? 11 : 12,
-              fontWeight: 700
-            }}
-          >
-            <span
-              style={{
-                background: "#ECFDF5",
-                color: "#059669",
-                border: "1px solid #A7F3D0",
-                padding: "3px 10px",
-                borderRadius: 6,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4
-              }}
-            >
-              <ArrowUpRight size={14} /> {stats.upCount || 0} Rate Ups
-            </span>
-            <span
-              style={{
-                background: "#FEF2F2",
-                color: "#DC2626",
-                border: "1px solid #FCA5A5",
-                padding: "3px 10px",
-                borderRadius: 6,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4
-              }}
-            >
-              <ArrowDownRight size={14} /> {stats.downCount || 0} Rate Downs
-            </span>
-            <span
-              style={{
-                background: "#F8FAFC",
-                color: "#475569",
-                border: "1px solid #E2E8F0",
-                padding: "3px 10px",
-                borderRadius: 6
-              }}
-            >
-              High: <strong style={{ color: "#059669" }}>{inr(stats.high)}</strong>
-            </span>
-            <span
-              style={{
-                background: "#F8FAFC",
-                color: "#475569",
-                border: "1px solid #E2E8F0",
-                padding: "3px 10px",
-                borderRadius: 6
-              }}
-            >
-              Low: <strong style={{ color: "#DC2626" }}>{inr(stats.low)}</strong>
-            </span>
-            {stats.spread > 0 && (
-              <span
-                style={{
-                  background: "#F8FAFC",
-                  color: "#475569",
-                  border: "1px solid #E2E8F0",
-                  padding: "3px 10px",
-                  borderRadius: 6
-                }}
-              >
-                Spread: <strong style={{ color: "#D97706" }}>{inr(stats.spread)}</strong>
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Controls: Chart Type, Toggle Purchases, Timeframes */}
@@ -529,27 +431,6 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
               <BarChart2 size={13} /> Candlesticks
             </button>
           </div>
-
-          {/* Toggle Purchase Markers */}
-          <button
-            className="gl-btn-ghost gl-btn-sm"
-            onClick={() => setShowPurchases(!showPurchases)}
-            style={{
-              background: showPurchases ? "#FEF3C7" : "#F8FAFC",
-              color: showPurchases ? "#B45309" : "#64748B",
-              border: showPurchases ? "1px solid #FDE68A" : "1px solid #E2E8F0",
-              fontWeight: 800,
-              fontSize: 11,
-              padding: "5px 10px",
-              borderRadius: 6,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5
-            }}
-            title="Toggle bought gold markers on graph"
-          >
-            <Coins size={13} /> Purchases {showPurchases ? "On" : "Off"}
-          </button>
 
           {/* Timeframe Selector */}
           <div
@@ -616,40 +497,6 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
             />
 
             <Tooltip content={<CustomTooltip />} />
-
-            {/* High Peak Reference Line */}
-            {stats.high > 0 && (
-              <ReferenceLine
-                y={stats.high}
-                stroke="#059669"
-                strokeDasharray="4 4"
-                strokeWidth={1}
-                label={{
-                  value: `Peak ${inr(stats.high)}`,
-                  position: "insideTopRight",
-                  fill: "#059669",
-                  fontSize: 10.5,
-                  fontWeight: 800
-                }}
-              />
-            )}
-
-            {/* Low Floor Reference Line */}
-            {stats.low > 0 && stats.low < stats.high && (
-              <ReferenceLine
-                y={stats.low}
-                stroke="#DC2626"
-                strokeDasharray="4 4"
-                strokeWidth={1}
-                label={{
-                  value: `Floor ${inr(stats.low)}`,
-                  position: "insideBottomRight",
-                  fill: "#DC2626",
-                  fontSize: 10.5,
-                  fontWeight: 800
-                }}
-              />
-            )}
 
             {/* Current Price Tracking Line */}
             <ReferenceLine
@@ -741,91 +588,8 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                 }}
               />
             )}
-
-            {/* Optional Bought Gold Marker Dots */}
-            {showPurchases && (
-              <Scatter
-                dataKey="boughtKacha"
-                name="Gold Bought Kacha Rate"
-                fill="#B45309"
-                shape="circle"
-                size={140}
-                isAnimationActive={true}
-              />
-            )}
           </ComposedChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* Logged Rate Movements (Ups & Downs History Strip) */}
-      <div style={{ marginTop: 14, borderTop: "1px solid #F1F5F9", paddingTop: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              color: "#475569",
-              textTransform: "uppercase",
-              letterSpacing: "0.4px",
-              display: "flex",
-              alignItems: "center",
-              gap: 6
-            }}
-          >
-            <Activity size={14} color="#059669" />
-            Rate Movements (Ups & Downs)
-          </div>
-          <span style={{ fontSize: 11, color: "#64748B", fontWeight: 700 }}>
-            {chartData.length} records recorded
-          </span>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6 }}>
-          {[...chartData].reverse().map((item, i) => (
-            <div
-              key={item.id || i}
-              style={{
-                background: item.movement === "up" ? "#ECFDF5" : (item.movement === "down" ? "#FEF2F2" : "#F8FAFC"),
-                border: `1px solid ${item.movement === "up" ? "#A7F3D0" : (item.movement === "down" ? "#FCA5A5" : "#E2E8F0")}`,
-                borderRadius: 8,
-                padding: "8px 12px",
-                minWidth: 145,
-                flexShrink: 0
-              }}
-            >
-              <div style={{ fontSize: 10.5, color: "#64748B", fontWeight: 700 }}>
-                {item.shortLabel || item.label}
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 900, color: "#0F172A", marginTop: 2, fontFamily: "'Consolas', monospace" }}>
-                {inr(item.kachaRate)}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  marginTop: 2,
-                  color: item.movement === "up" ? "#059669" : (item.movement === "down" ? "#DC2626" : "#64748B"),
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 3
-                }}
-              >
-                {item.movement === "up" && (
-                  <>
-                    <ArrowUpRight size={12} /> +{inr(item.rateDiff)}
-                  </>
-                )}
-                {item.movement === "down" && (
-                  <>
-                    <ArrowDownRight size={12} /> -{inr(Math.abs(item.rateDiff))}
-                  </>
-                )}
-                {item.movement === "initial" && "Starting Point"}
-                {item.movement === "equal" && "Unchanged"}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
