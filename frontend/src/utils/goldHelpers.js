@@ -137,7 +137,11 @@ export function resizeImage(file) {
 export async function fetchGoodReturns22KRate() {
   const parseRateFromHtml = (html) => {
     if (!html) return null;
+    if (typeof html === 'string' && (html.trim().startsWith('<?php') || html.includes('Failed to fetch live rates'))) {
+      return null;
+    }
     const m = html.match(/22k\s*Gold[^]*?class="[^"]*ticker-value[^"]*">\s*₹?\s*([0-9,]+)/i)
+      || html.match(/id="22K-price"[^>]*>[\s\S]*?([0-9,]{4,6})/i)
       || html.match(/₹?\s*([0-9,]{4,6})\s*per gram for 22 karat/i)
       || html.match(/22k\s*Gold[^]*?₹\s*([0-9,]{4,6})/i)
       || html.match(/22\s*Karat[^\d]{1,100}₹?\s*([0-9,]{4,6})/i);
@@ -148,18 +152,35 @@ export async function fetchGoodReturns22KRate() {
     return null;
   };
 
+  const isLocal = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
   const apiBaseUrl = import.meta.env.VITE_API_URL || "https://kacha-gold.onrender.com/api";
   const targetUrl = 'https://www.goodreturns.in/gold-rates/';
-  const endpoints = [
-    { url: `${baseUrl}/api/goodreturns/index.php`, type: 'text' },
-    { url: `${baseUrl}/api/goodreturns/`, type: 'text' },
-    { url: `${baseUrl}/api/goodreturns`, type: 'text' },
-    { url: `${apiBaseUrl}/rates/goodreturns`, type: 'backend-json' },
-    { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl) + '&t=' + Date.now(), type: 'json' },
-    { url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl), type: 'text' },
-    { url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl), type: 'text' }
-  ];
+
+  const endpoints = [];
+
+  if (isLocal) {
+    // In local dev, use Vite proxy or local express backend on port 5000
+    endpoints.push({ url: `${baseUrl}/api/goodreturns`, type: 'text' });
+    endpoints.push({ url: '/api/goodreturns', type: 'text' });
+    endpoints.push({ url: 'http://localhost:5000/api/rates/goodreturns', type: 'backend-json' });
+  }
+
+  // Live production PHP endpoints (Apache/cPanel executes index.php)
+  endpoints.push({ url: `${baseUrl}/api/goodreturns/index.php`, type: 'text' });
+  endpoints.push({ url: `${baseUrl}/api/goodreturns/`, type: 'text' });
+  endpoints.push({ url: `${baseUrl}/api/goodreturns`, type: 'text' });
+  endpoints.push({ url: '/api/goodreturns', type: 'text' });
+
+  // Remote backend proxy (if deployed on Render)
+  endpoints.push({ url: `${apiBaseUrl}/rates/goodreturns`, type: 'backend-json' });
+
+  // External CORS proxies as fallbacks
+  endpoints.push({ url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl) + '&t=' + Date.now(), type: 'json' });
+  endpoints.push({ url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl), type: 'text' });
+  endpoints.push({ url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl), type: 'text' });
 
   for (const ep of endpoints) {
     try {
