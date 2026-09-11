@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gold-buyback-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        value: "u248216155_kacha"
+      - key: DB_PORT
+        value: "3306"

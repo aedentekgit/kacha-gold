@@ -1,0 +1,5 @@
+{
+  "ignore": ["gold_db.json", "*.sqlite", "node_modules"],
+  "watch": ["server.js", "routes/", "config/", "seed.js"],
+  "ext": "js,mjs,json"
+}
