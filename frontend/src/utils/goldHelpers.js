@@ -110,6 +110,54 @@ export const fmtDate = (dateStr) => {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" });
 };
 
+export const formatCleanTime = (timeStr) => {
+  if (!timeStr) return "";
+  const match = String(timeStr).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+  if (!match) return timeStr;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  let ampm = match[3] ? match[3].toUpperCase() : null;
+
+  if (ampm) {
+    if (hours === 0) hours = 12;
+    else if (hours > 12) hours = hours % 12 || 12;
+  } else {
+    ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+  }
+  return `${hours}:${minutes} ${ampm}`;
+};
+
+export const formatShortDate = (dateStr, includeYear = false) => {
+  if (!dateStr) return "";
+  const parts = String(dateStr).split("-");
+  if (parts.length === 3) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthIdx = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const yr = parts[0];
+    if (monthIdx >= 0 && monthIdx < 12 && !isNaN(day)) {
+      return includeYear ? `${day} ${months[monthIdx]} '${yr.slice(2)}` : `${day} ${months[monthIdx]}`;
+    }
+  }
+  return dateStr;
+};
+
+export const formatFullDisplayDate = (dateStr) => {
+  if (!dateStr) return "";
+  const parts = String(dateStr).split("-");
+  if (parts.length === 3) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthIdx = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const yr = parts[0];
+    if (monthIdx >= 0 && monthIdx < 12 && !isNaN(day)) {
+      return `${day} ${months[monthIdx]} ${yr}`;
+    }
+  }
+  return dateStr;
+};
+
 export function resizeImage(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

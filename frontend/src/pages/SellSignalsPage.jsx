@@ -657,7 +657,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                         <ArrowUpRight size={12} /> GAIN
                       </span>
                     ) : (
-                      <span className="gl-badge sell-hold" style={{ background: "#F1F5F9", color: "#64748B", border: "1px solid #E2E8F0", padding: "4px 8px", fontSize: "11px", borderRadius: 9999 }}>
+                      <span className="gl-badge sell-hold" style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 9999 }}>
                         <TrendingDown size={12} /> HOLD
                       </span>
                     )}

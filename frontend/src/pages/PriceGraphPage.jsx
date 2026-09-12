@@ -11,7 +11,14 @@ import {
   Tooltip,
   ReferenceLine
 } from "recharts";
-import { inr, fmtDate, compareEntriesAsc } from "../utils/goldHelpers";
+import {
+  inr,
+  fmtDate,
+  compareEntriesAsc,
+  formatCleanTime,
+  formatShortDate,
+  formatFullDisplayDate
+} from "../utils/goldHelpers";
 import {
   TrendingUp,
   TrendingDown,
@@ -20,6 +27,38 @@ import {
   Plus
 } from "lucide-react";
 import EmptyState from "../components/EmptyState";
+
+const CustomXAxisTick = ({ x, y, payload, isMobile }) => {
+  if (!payload || payload.value == null) return null;
+  const rawValue = String(payload.value);
+  const parts = rawValue.split("__SEP__");
+  const topText = parts[0];
+  const bottomText = parts.length > 1 ? parts[1] : "";
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        textAnchor="middle"
+        fill="#475569"
+        fontSize={isMobile ? 9.5 : 11}
+        fontWeight={700}
+      >
+        <tspan x={0} dy={14}>{topText}</tspan>
+        {bottomText ? (
+          <tspan
+            x={0}
+            dy={13}
+            fontSize={isMobile ? 8.5 : 9.5}
+            fill="#94A3B8"
+            fontWeight={600}
+          >
+            {bottomText}
+          </tspan>
+        ) : null}
+      </text>
+    </g>
+  );
+};
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -91,7 +130,7 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export default function PriceGraphPage({ sortedRates, purchases, totals, targetProfit, kachaPerGram, sortOrder = "desc", filterMode = "all" }) {
-  const [timeRange, setTimeRange] = useState("30d");
+  const [timeRange, setTimeRange] = useState("7d");
   const [chartType, setChartType] = useState("candle"); // 'candle' (Candlesticks) by default
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
 
@@ -174,6 +213,10 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
     const isSingleDay = uniqueDates.size === 1;
     const hasMultipleSameDay = uniqueDates.size < processedRates.length;
 
+    const firstYear = processedRates[0]?.date?.slice(0, 4);
+    const lastYear = processedRates[processedRates.length - 1]?.date?.slice(0, 4);
+    const spansMultipleYears = Boolean(firstYear && lastYear && firstYear !== lastYear);
+
     let upCount = 0;
     let downCount = 0;
     let equalCount = 0;
@@ -203,23 +246,26 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
         }
       }
 
-      // Format label intelligently to eliminate identical X-axis labels
-      let label = fmtDate(dateStr);
-      let shortLabel = fmtDate(dateStr);
-      if (r.time) {
-        if (isSingleDay) {
-          label = `${fmtDate(dateStr)} ${r.time}`;
-          shortLabel = r.time;
-        } else if (hasMultipleSameDay) {
-          label = `${fmtDate(dateStr)} ${r.time}`;
-          shortLabel = `${dateStr.slice(5)} ${r.time}`;
-        } else {
-          label = `${fmtDate(dateStr)} ${r.time}`;
-          shortLabel = fmtDate(dateStr);
-        }
-      } else if (isSingleDay) {
-        label = `${fmtDate(dateStr)} (#${idx + 1})`;
-        shortLabel = `#${idx + 1}`;
+      const datePart = formatShortDate(dateStr, spansMultipleYears);
+      const cleanTime = formatCleanTime(r.time || "");
+
+      // For Tooltip: Full, crystal-clear timestamp
+      let fullLabel = formatFullDisplayDate(dateStr);
+      if (cleanTime) {
+        fullLabel = `${fullLabel} • ${cleanTime}`;
+      }
+
+      // Format X-axis tick intelligently:
+      // If single day: show the time directly (e.g. 2:20 PM)
+      // If multiple updates on same day: two-tier tick with date on top and time below
+      // If regular daily records: show clean human-readable date (e.g. 11 Sep)
+      let shortLabel = datePart;
+      if (isSingleDay) {
+        shortLabel = cleanTime || datePart;
+      } else if (hasMultipleSameDay && cleanTime) {
+        shortLabel = `${datePart}__SEP__${cleanTime}`;
+      } else {
+        shortLabel = datePart;
       }
 
       // Realistic slender candlestick wicks
@@ -238,10 +284,12 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
 
       return {
         id: r.id || `${dateStr}-${idx}`,
-        label,
+        label: fullLabel,
         shortLabel,
         date: dateStr,
-        time: r.time || "",
+        time: cleanTime,
+        datePart,
+        cleanTime,
         kachaRate: close,
         prevRate: prevClose,
         rateDiff,
@@ -401,11 +449,12 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "center",
+            flexDirection: isMobile ? "column" : "row",
+            justifyContent: isMobile ? "stretch" : "flex-end",
+            alignItems: isMobile ? "stretch" : "center",
             gap: 8,
-            flexWrap: "wrap"
+            flexWrap: isMobile ? "nowrap" : "wrap",
+            width: isMobile ? "100%" : "auto"
           }}
         >
           {/* Chart View Switcher */}
@@ -416,18 +465,21 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
               background: "#F8FAFC",
               padding: "2px",
               borderRadius: 6,
-              border: "1px solid #E2E8F0"
+              border: "1px solid #E2E8F0",
+              width: isMobile ? "100%" : "auto"
             }}
           >
             <button
               className="gl-btn-ghost gl-btn-sm"
               onClick={() => setChartType("area")}
               style={{
+                flex: isMobile ? 1 : "initial",
+                justifyContent: "center",
                 background: chartType === "area" ? "#0F172A" : "transparent",
                 color: chartType === "area" ? "#FFFFFF" : "#475569",
                 fontWeight: 800,
                 fontSize: 11,
-                padding: "5px 10px",
+                padding: isMobile ? "6px 10px" : "5px 10px",
                 borderRadius: 4,
                 border: "none",
                 display: "inline-flex",
@@ -441,11 +493,13 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
               className="gl-btn-ghost gl-btn-sm"
               onClick={() => setChartType("candle")}
               style={{
+                flex: isMobile ? 1 : "initial",
+                justifyContent: "center",
                 background: chartType === "candle" ? "#0F172A" : "transparent",
                 color: chartType === "candle" ? "#FFFFFF" : "#475569",
                 fontWeight: 800,
                 fontSize: 11,
-                padding: "5px 10px",
+                padding: isMobile ? "6px 10px" : "5px 10px",
                 borderRadius: 4,
                 border: "none",
                 display: "inline-flex",
@@ -461,9 +515,11 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              flexWrap: "wrap"
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: isMobile ? "stretch" : "center",
+              gap: isMobile ? 6 : "6px",
+              flexWrap: isMobile ? "nowrap" : "wrap",
+              width: isMobile ? "100%" : "auto"
             }}
           >
             <div
@@ -473,7 +529,8 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                 background: "#F1F5F9",
                 padding: "2px",
                 borderRadius: 6,
-                border: "1px solid #CBD5E1"
+                border: "1px solid #CBD5E1",
+                width: isMobile ? "100%" : "auto"
               }}
             >
               {[
@@ -491,11 +548,14 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                   className="gl-btn-ghost gl-btn-sm"
                   onClick={() => setTimeRange(tf.id)}
                   style={{
+                    flex: isMobile ? 1 : "initial",
+                    textAlign: "center",
+                    justifyContent: "center",
                     background: timeRange === tf.id ? themeColor : "transparent",
                     color: timeRange === tf.id ? "#FFFFFF" : "#334155",
                     fontWeight: 800,
-                    fontSize: 10.5,
-                    padding: "4px 8px",
+                    fontSize: isMobile ? 10 : 10.5,
+                    padding: isMobile ? "6px 0" : "4px 8px",
                     borderRadius: 4,
                     border: "none",
                     cursor: "pointer",
@@ -509,7 +569,16 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
 
             {/* Monthwise Picker */}
             {timeRange === "month" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  gap: 6,
+                  width: isMobile ? "100%" : "auto",
+                  paddingTop: isMobile ? 2 : 0
+                }}
+              >
                 <button
                   type="button"
                   title="Previous Month"
@@ -524,9 +593,9 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                     background: "#F1F5F9",
                     border: "1px solid #CBD5E1",
                     borderRadius: 4,
-                    padding: "2px 6px",
+                    padding: isMobile ? "4px 10px" : "2px 6px",
                     cursor: "pointer",
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 800,
                     color: "#475569"
                   }}
@@ -538,15 +607,16 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                   style={{
-                    padding: "2px 6px",
-                    fontSize: 11,
-                    height: 25,
+                    padding: "3px 8px",
+                    fontSize: 12,
+                    height: 28,
                     fontWeight: 700,
                     borderRadius: 4,
                     border: "1px solid #CBD5E1",
                     background: "#FFFFFF",
                     color: "#0F172A",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    maxWidth: isMobile ? 180 : "auto"
                   }}
                 />
                 <button
@@ -563,9 +633,9 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                     background: "#F1F5F9",
                     border: "1px solid #CBD5E1",
                     borderRadius: 4,
-                    padding: "2px 6px",
+                    padding: isMobile ? "4px 10px" : "2px 6px",
                     cursor: "pointer",
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 800,
                     color: "#475569"
                   }}
@@ -577,7 +647,16 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
 
             {/* Yearwise Selector */}
             {timeRange === "year" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  gap: 6,
+                  width: isMobile ? "100%" : "auto",
+                  paddingTop: isMobile ? 2 : 0
+                }}
+              >
                 <button
                   type="button"
                   title="Previous Year"
@@ -588,9 +667,9 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                     background: "#F1F5F9",
                     border: "1px solid #CBD5E1",
                     borderRadius: 4,
-                    padding: "2px 6px",
+                    padding: isMobile ? "4px 10px" : "2px 6px",
                     cursor: "pointer",
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 800,
                     color: "#475569"
                   }}
@@ -601,15 +680,16 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                   style={{
-                    padding: "2px 8px",
-                    fontSize: 11,
-                    height: 25,
+                    padding: "3px 10px",
+                    fontSize: 12,
+                    height: 28,
                     fontWeight: 700,
                     borderRadius: 4,
                     border: "1px solid #CBD5E1",
                     background: "#FFFFFF",
                     color: "#0F172A",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    minWidth: 90
                   }}
                 >
                   {availableYears.map((y) => (
@@ -628,9 +708,9 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
                     background: "#F1F5F9",
                     border: "1px solid #CBD5E1",
                     borderRadius: 4,
-                    padding: "2px 6px",
+                    padding: isMobile ? "4px 10px" : "2px 6px",
                     cursor: "pointer",
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 800,
                     color: "#475569"
                   }}
@@ -644,7 +724,7 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
       </div>
 
       {/* Chart Canvas */}
-      <div style={{ width: "100%", height: isMobile ? 380 : 440, minHeight: 320 }}>
+      <div style={{ width: "100%", height: isMobile ? 390 : 450, minHeight: 320 }}>
         {chartData.length === 0 ? (
           <div
             style={{
@@ -663,31 +743,43 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-            data={chartData}
-            margin={isMobile ? { top: 15, right: 8, left: -14, bottom: 25 } : { top: 20, right: 15, left: 10, bottom: 20 }}
-          >
-            <defs>
-              <linearGradient id="kachaRateGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={themeColor} stopOpacity={0.28} />
-                <stop offset="95%" stopColor={themeColor} stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
+              data={chartData}
+              margin={
+                isMobile
+                  ? { top: 15, right: 12, left: -8, bottom: 36 }
+                  : { top: 20, right: 20, left: 6, bottom: 42 }
+              }
+            >
+              <defs>
+                <linearGradient id="kachaRateGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={themeColor} stopOpacity={0.28} />
+                  <stop offset="95%" stopColor={themeColor} stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
 
-            <CartesianGrid strokeDasharray="2 2" stroke="#F1F5F9" vertical={false} />
-            <XAxis
-              dataKey="shortLabel"
-              tick={{ fontSize: isMobile ? 9.5 : 11.5, fill: "#64748B", fontWeight: 700 }}
-              interval="preserveStartEnd"
-              minTickGap={20}
-              axisLine={{ stroke: "#CBD5E1" }}
-            />
-            <YAxis
-              width={isMobile ? 50 : 75}
-              tick={{ fontSize: isMobile ? 10 : 11.5, fill: "#64748B", fontWeight: 700 }}
-              domain={[yMin, yMax]}
-              tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
-              axisLine={{ stroke: "#CBD5E1" }}
-            />
+              <CartesianGrid strokeDasharray="2 2" stroke="#F1F5F9" vertical={false} />
+              <XAxis
+                dataKey="shortLabel"
+                tick={<CustomXAxisTick isMobile={isMobile} />}
+                tickLine={false}
+                axisLine={{ stroke: "#E2E8F0", strokeWidth: 1 }}
+                interval={chartData.length <= 8 ? 0 : "preserveStartEnd"}
+                minTickGap={16}
+                tickFormatter={(val) => String(val).split("__SEP__")[0] || ""}
+              />
+              <YAxis
+                width={isMobile ? 54 : 70}
+                tick={{ fontSize: isMobile ? 10 : 11.5, fill: "#64748B", fontWeight: 700 }}
+                domain={[yMin, yMax]}
+                tickFormatter={(v) => {
+                  if (v == null || isNaN(v)) return "";
+                  const spread = yMax - yMin;
+                  return spread <= 3000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${(v / 1000).toFixed(0)}k`;
+                }}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+              />
 
             <Tooltip content={<CustomTooltip />} />
 

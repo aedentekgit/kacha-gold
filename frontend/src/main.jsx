@@ -4,9 +4,13 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 import { initStatusBarObserver } from './utils/statusBar'
+import { initBackButtonListener } from './utils/backButton'
 
 // Initialize native status bar synchronizer for Android
 initStatusBarObserver()
+
+// Initialize native Android hardware back button listener
+initBackButtonListener()
 
 // If hosted at /kacha-gold (e.g. vmoneygold.com/kacha-gold), use "/kacha-gold" basename for clean URLs (no #)
 // If in Android APK (Capacitor) or local dev, use "" basename

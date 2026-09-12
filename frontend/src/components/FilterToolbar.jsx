@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Filter, ArrowUpDown, ChevronDown, Check, X } from "lucide-react";
 
 import CustomSelect from "./CustomSelect";
+import { useBackHandler } from "../utils/backButton";
 
 export default function FilterToolbar({
   filterMode, setFilterMode,
@@ -17,6 +18,12 @@ export default function FilterToolbar({
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef(null);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
+
+  // Close sort drawer on back press
+  useBackHandler(() => {
+    setSortOpen(false);
+    return true;
+  }, sortOpen, 40);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 640);

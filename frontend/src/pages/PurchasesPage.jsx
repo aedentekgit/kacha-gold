@@ -5,6 +5,7 @@ import { inr, fmtDate, compareEntriesDesc, compareEntriesAsc } from "../utils/go
 import TablePagination from "../components/TablePagination";
 import CustomSelect from "../components/CustomSelect";
 import EmptyState from "../components/EmptyState";
+import { useBackHandler } from "../utils/backButton";
 
 export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, persistPurchases, allPurchases, requestConfirm, onEdit, sortOrder = "desc", onToggleSold }) {
   const navigate = useNavigate();
@@ -13,6 +14,12 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
   const [viewingPurchase, setViewingPurchase] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
+
+  // Close view purchase modal on back press
+  useBackHandler(() => {
+    setViewingPurchase(null);
+    return true;
+  }, !!viewingPurchase, 50);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 640);

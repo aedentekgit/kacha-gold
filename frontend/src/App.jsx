@@ -30,8 +30,10 @@ import {
 import ConfirmModal from "./components/ConfirmModal";
 import EditPurchaseModal from "./components/EditPurchaseModal";
 import KachaHistoryModal from "./components/KachaHistoryModal";
+import ExitConfirmModal from "./components/ExitConfirmModal";
 import FilterToolbar from "./components/FilterToolbar";
 import PinLockScreen from "./components/PinLockScreen";
+import { setDefaultNavigationHandler, useBackHandler, exitApplication } from "./utils/backButton";
 
 import DashboardPage from "./pages/DashboardPage";
 import SellSignalsPage from "./pages/SellSignalsPage";
@@ -463,9 +465,9 @@ const STYLES = `
     animation: gl-sell-blink 1.2s infinite ease-in-out !important;
   }
   .gl-badge.sell-hold {
-    background: #FFFBEB;
-    color: #B45309;
-    border: 1px solid #FDE68A;
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
   }
 
   /* Signal Hero Box */
@@ -926,8 +928,15 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [showKachaModal, setShowKachaModal] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
   const [showMobileMore, setShowMobileMore] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const scrollRef = useRef(null);
+
+  // In-app navigation history stack
+  const historyStackRef = useRef(["/signals"]);
+  const isBackNavRef = useRef(false);
 
   // Security PIN & Authentication State
   const [appPin, setAppPin] = useState(() => {
@@ -943,6 +952,94 @@ export default function App() {
     setIsAuthenticated(true);
     sessionStorage.setItem("gl_pin_authenticated", "true");
   }, []);
+
+  // Sync in-app navigation history stack as user navigates
+  useEffect(() => {
+    const rawPath = location.pathname;
+    let currentPath = rawPath === "/" ? "/signals" : rawPath;
+    if (currentPath === "/ledger") currentPath = "/purchases";
+    if (currentPath === "/price-graph") currentPath = "/trends";
+
+    if (isBackNavRef.current) {
+      isBackNavRef.current = false;
+      return;
+    }
+
+    // If user returns to Home, reset the back stack to root
+    if (currentPath === "/signals") {
+      historyStackRef.current = ["/signals"];
+      return;
+    }
+
+    const stack = historyStackRef.current;
+    const lastPath = stack[stack.length - 1];
+    if (lastPath !== currentPath) {
+      stack.push(currentPath);
+    }
+  }, [location.pathname]);
+
+  // Handler for back button navigation (goes to previous screen or prompts exit on Home)
+  const handleAppBack = useCallback(() => {
+    const rawPath = location.pathname;
+    let currentPath = rawPath === "/" ? "/signals" : rawPath;
+    if (currentPath === "/ledger") currentPath = "/purchases";
+    if (currentPath === "/price-graph") currentPath = "/trends";
+
+    // If currently on Home screen or on Lock screen, show exit confirmation dialog
+    if (currentPath === "/signals" || !isAuthenticated) {
+      setShowExitConfirm(true);
+      return;
+    }
+
+    const stack = historyStackRef.current;
+    // Pop current screen from stack
+    if (stack.length > 0 && stack[stack.length - 1] === currentPath) {
+      stack.pop();
+    }
+
+    if (stack.length > 0) {
+      const prevPath = stack[stack.length - 1];
+      isBackNavRef.current = true;
+      navigate(prevPath);
+    } else {
+      historyStackRef.current = ["/signals"];
+      isBackNavRef.current = true;
+      navigate("/signals");
+    }
+  }, [location.pathname, navigate, isAuthenticated]);
+
+  // Set the default fallback navigation handler
+  useEffect(() => {
+    setDefaultNavigationHandler(handleAppBack);
+    return () => setDefaultNavigationHandler(null);
+  }, [handleAppBack]);
+
+  // Modal back handlers - close active overlays before navigating or exiting
+  useBackHandler(() => {
+    setShowExitConfirm(false);
+    return true;
+  }, showExitConfirm, 70);
+
+  useBackHandler(() => {
+    setShowMobileMore(false);
+    return true;
+  }, showMobileMore, 40);
+
+  useBackHandler(() => {
+    setShowKachaModal(false);
+    setSelectedHistoryItem(null);
+    return true;
+  }, showKachaModal, 50);
+
+  useBackHandler(() => {
+    setEditingItem(null);
+    return true;
+  }, !!editingItem, 50);
+
+  useBackHandler(() => {
+    setConfirmState(null);
+    return true;
+  }, !!confirmState, 60);
 
   const handleLockApp = useCallback(() => {
     setShowMobileMore(false);
@@ -1024,8 +1121,6 @@ export default function App() {
   });
   const [customEnd, setCustomEnd] = useState(todayStr());
   const [sortOrder, setSortOrder] = useState("desc");
-  const [showKachaModal, setShowKachaModal] = useState(false);
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
   const [liveTime, setLiveTime] = useState(() => new Date());
 
@@ -1406,7 +1501,16 @@ export default function App() {
   const requestConfirm = (config) => setConfirmState(config);
 
   if (!isAuthenticated) {
-    return <PinLockScreen expectedPin={appPin} onSuccess={handlePinSuccess} />;
+    return (
+      <>
+        <PinLockScreen expectedPin={appPin} onSuccess={handlePinSuccess} />
+        <ExitConfirmModal
+          isOpen={showExitConfirm}
+          onClose={() => setShowExitConfirm(false)}
+          onConfirmExit={exitApplication}
+        />
+      </>
+    );
   }
 
   return (
@@ -1856,6 +1960,13 @@ export default function App() {
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
         onSave={handleSaveEdit}
+      />
+
+      {/* Confirmation Popup When Exiting App */}
+      <ExitConfirmModal
+        isOpen={showExitConfirm}
+        onClose={() => setShowExitConfirm(false)}
+        onConfirmExit={exitApplication}
       />
     </div>
   );
