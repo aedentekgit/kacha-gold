@@ -7,18 +7,44 @@
 
 * {
   font-family: 'Ubuntu', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
   background-color: #FAF8F5;
   color: #1C1917;
-  min-height: 100vh;
   font-family: 'Ubuntu', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Seamless Native App Scrollbar Reset - Hide all scrollbars globally */
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* Headings strictly use Montserrat with lighter font weight (600) */
@@ -289,4 +315,174 @@ input[type="month"].gl-date-input {
               box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.2s ease !important;
 }
+
+/* Global Container & Body Layout */
+.gl-container {
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 18px;
+  padding-right: 18px;
+  box-sizing: border-box;
+}
+
+.gl-body {
+  padding-top: 12px;
+  padding-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .gl-container {
+    padding-left: calc(16px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(16px + env(safe-area-inset-right, 0px)) !important;
+    box-sizing: border-box;
+  }
+  .gl-body {
+    padding-top: 8px;
+    padding-bottom: 20px;
+  }
+}
+
+/* Mobile Filter Segmented Bar */
+.gl-mobile-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.gl-mobile-pill-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding: 3px 0 6px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.gl-mobile-pill-track::-webkit-scrollbar {
+  display: none !important;
+}
+
+.gl-mobile-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gl-mobile-pill:active {
+  transform: scale(0.95);
+}
+.gl-mobile-pill.active {
+  background: #059669;
+  color: #FFFFFF;
+  border-color: #047857;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28);
+}
+
+.gl-mobile-sort-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.gl-mobile-sort-pill:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Sub-filter Bar (Year, Month, Date Picker) */
+.gl-mobile-subfilter-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  animation: glDropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mobile Target Profit Bar */
+.gl-mobile-target-bar {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gl-mobile-target-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Mobile Portfolio Hero Card */
+.gl-mobile-hero-card {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  border-radius: 18px;
+  padding: 16px 18px;
+  color: #FFFFFF;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.gl-mobile-hero-card::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0) 70%);
+  pointer-events: none;
+}
+
+/* Mobile Trade Card (Lot card) */
+.gl-mobile-trade-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+.gl-mobile-trade-card:active {
+  transform: scale(0.985);
+  background-color: #FAFAFA;
+}
+
 

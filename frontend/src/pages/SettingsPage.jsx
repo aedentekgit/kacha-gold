@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
   Lock,
@@ -35,6 +35,14 @@ export default function SettingsPage({
   const [targetPctVal, setTargetPctVal] = useState(targetProfitPct);
   const [targetSuccess, setTargetSuccess] = useState("");
   const [isSavingTarget, setIsSavingTarget] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Handle PIN Update
   const handleSavePin = async (e) => {
@@ -374,90 +382,108 @@ export default function SettingsPage({
           flex-direction: column;
         }
 
+        .gl-settings-section-tag {
+          font-size: 11px;
+          font-weight: 800;
+          color: #64748B;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          margin-bottom: 6px;
+          padding-left: 2px;
+        }
+
         @media (max-width: 640px) {
           .gl-settings-page {
-            padding: 4px 0 28px 0;
+            padding: 2px 0 24px 0;
           }
           .gl-settings-header {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
           }
           .gl-settings-title {
-            font-size: 23px;
+            font-size: 18px;
             letter-spacing: -0.2px;
           }
           .gl-settings-sub {
-            font-size: 14px;
-            line-height: 1.45;
-            color: #475569;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #64748B;
+          }
+          .gl-settings-grid {
+            gap: 16px;
           }
           .gl-settings-card {
-            padding: 18px 16px;
+            padding: 14px 14px;
             border-radius: 16px;
           }
           .gl-card-head {
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
           }
           .gl-card-head-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
           }
           .gl-icon-badge {
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             border-radius: 10px;
             flex-shrink: 0;
           }
           .gl-head-title {
-            font-size: 16.5px;
+            font-size: 15px;
             line-height: 1.3;
           }
           .gl-head-desc {
-            font-size: 13px;
-            line-height: 1.45;
+            font-size: 12px;
+            line-height: 1.4;
             color: #64748B;
-            margin-top: 3px;
+            margin-top: 2px;
           }
           .gl-status-pill {
             flex-shrink: 0;
-            padding: 4px 9px;
-            font-size: 11px;
-            gap: 5px;
+            padding: 3px 8px;
+            font-size: 10.5px;
+            gap: 4px;
           }
           .gl-form-row {
             grid-template-columns: 1fr;
-            gap: 14px;
-            margin-bottom: 18px;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+          .gl-mobile-two-col {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
           }
           .gl-label {
-            font-size: 12.5px;
+            font-size: 11px;
           }
           .gl-input {
-            height: 46px;
-            font-size: 15px;
+            height: 42px;
+            font-size: 14px;
           }
           .gl-btn-group {
             display: flex;
             flex-direction: column;
             width: 100%;
-            gap: 10px;
+            gap: 8px;
           }
           .gl-btn-primary, .gl-btn-secondary {
             width: 100%;
             justify-content: center;
-            height: 46px;
-            font-size: 14px;
+            height: 44px;
+            font-size: 13.5px;
           }
           .gl-db-info-grid {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding: 12px 14px;
+            gap: 8px;
+            padding: 10px 12px;
           }
           .gl-db-info-item {
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid #EEF2F6;
           }
           .gl-db-info-item:last-child {
@@ -469,219 +495,231 @@ export default function SettingsPage({
 
       {/* Header */}
       <div className="gl-settings-header">
-        <h1 className="gl-settings-title">App Settings</h1>
+        <h1 className="gl-settings-title">{isMobile ? "Settings" : "App Settings"}</h1>
         <p className="gl-settings-sub">Manage security PIN, database options, and sell signal targets</p>
       </div>
 
       <div className="gl-settings-grid">
-        {/* Card 1: PIN Security */}
-        <div className="gl-settings-card">
-          <div className="gl-card-head">
-            <div className="gl-card-head-top">
-              <div className="gl-icon-badge">
-                <ShieldCheck size={22} />
+        {/* Section 1: Security PIN */}
+        <div>
+          {isMobile && <div className="gl-settings-section-tag">SECURITY & APP ACCESS</div>}
+          <div className="gl-settings-card">
+            <div className="gl-card-head">
+              <div className="gl-card-head-top">
+                <div className="gl-icon-badge">
+                  <ShieldCheck size={isMobile ? 18 : 22} />
+                </div>
+                <div className="gl-status-pill">
+                  <span className="gl-status-dot" />
+                  <span>PIN Protected</span>
+                </div>
               </div>
-              <div className="gl-status-pill">
-                <span className="gl-status-dot" />
-                <span>PIN Protected</span>
+              <div>
+                <h3 className="gl-head-title">Security PIN Protection</h3>
+                <p className="gl-head-desc">Set your 6-digit master PIN required to access the ledger</p>
               </div>
             </div>
-            <div>
-              <h3 className="gl-head-title">Security PIN Protection</h3>
-              <p className="gl-head-desc">Set your 6-digit master PIN required to access the ledger</p>
-            </div>
+
+            {pinError && (
+              <div className="gl-msg-banner error">
+                <AlertCircle size={16} />
+                <span>{pinError}</span>
+              </div>
+            )}
+
+            {pinSuccess && (
+              <div className="gl-msg-banner success">
+                <CheckCircle2 size={16} />
+                <span>{pinSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSavePin}>
+              <div className="gl-form-row">
+                {/* Current PIN */}
+                <div className="gl-form-group">
+                  <label className="gl-label">Current PIN</label>
+                  <div className="gl-input-wrap">
+                    <input
+                      type={showPins ? "text" : "password"}
+                      maxLength={6}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="Enter current 6-digit PIN"
+                      value={oldPin}
+                      onChange={(e) => setOldPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className="gl-input"
+                    />
+                    <button
+                      type="button"
+                      className="gl-input-btn"
+                      onClick={() => setShowPins(!showPins)}
+                      title={showPins ? "Hide" : "Show"}
+                    >
+                      {showPins ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New PIN & Confirm PIN in 2 columns on mobile */}
+                <div className={isMobile ? "gl-mobile-two-col" : "gl-form-group"} style={{ display: isMobile ? "grid" : "contents" }}>
+                  <div className="gl-form-group">
+                    <label className="gl-label">{isMobile ? "New PIN" : "New 6-Digit PIN"}</label>
+                    <div className="gl-input-wrap">
+                      <input
+                        type={showPins ? "text" : "password"}
+                        maxLength={6}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="e.g. 123456"
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        className="gl-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="gl-form-group">
+                    <label className="gl-label">{isMobile ? "Confirm PIN" : "Confirm New PIN"}</label>
+                    <div className="gl-input-wrap">
+                      <input
+                        type={showPins ? "text" : "password"}
+                        maxLength={6}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="Re-enter PIN"
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        className="gl-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="gl-btn-group">
+                <button
+                  type="submit"
+                  disabled={isSavingPin || !oldPin || !newPin || !confirmPin}
+                  className="gl-btn-primary"
+                >
+                  <Save size={15} />
+                  <span>{isSavingPin ? "Updating DB..." : "Update PIN in Database"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onLockApp}
+                  className="gl-btn-secondary"
+                  title="Lock application immediately"
+                >
+                  <Lock size={15} />
+                  <span>Lock App Now</span>
+                </button>
+              </div>
+            </form>
           </div>
-
-          {pinError && (
-            <div className="gl-msg-banner error">
-              <AlertCircle size={16} />
-              <span>{pinError}</span>
-            </div>
-          )}
-
-          {pinSuccess && (
-            <div className="gl-msg-banner success">
-              <CheckCircle2 size={16} />
-              <span>{pinSuccess}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSavePin}>
-            <div className="gl-form-row">
-              {/* Current PIN */}
-              <div className="gl-form-group">
-                <label className="gl-label">Current PIN</label>
-                <div className="gl-input-wrap">
-                  <input
-                    type={showPins ? "text" : "password"}
-                    maxLength={6}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="Enter current 6-digit PIN"
-                    value={oldPin}
-                    onChange={(e) => setOldPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="gl-input"
-                  />
-                  <button
-                    type="button"
-                    className="gl-input-btn"
-                    onClick={() => setShowPins(!showPins)}
-                    title={showPins ? "Hide" : "Show"}
-                  >
-                    {showPins ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* New PIN */}
-              <div className="gl-form-group">
-                <label className="gl-label">New 6-Digit PIN</label>
-                <div className="gl-input-wrap">
-                  <input
-                    type={showPins ? "text" : "password"}
-                    maxLength={6}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="e.g. 123456"
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="gl-input"
-                  />
-                </div>
-              </div>
-
-              {/* Confirm New PIN */}
-              <div className="gl-form-group">
-                <label className="gl-label">Confirm New PIN</label>
-                <div className="gl-input-wrap">
-                  <input
-                    type={showPins ? "text" : "password"}
-                    maxLength={6}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="Re-enter new 6-digit PIN"
-                    value={confirmPin}
-                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="gl-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="gl-btn-group">
-              <button
-                type="submit"
-                disabled={isSavingPin || !oldPin || !newPin || !confirmPin}
-                className="gl-btn-primary"
-              >
-                <Save size={16} />
-                <span>{isSavingPin ? "Updating DB..." : "Update PIN in Database"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={onLockApp}
-                className="gl-btn-secondary"
-                title="Lock application immediately"
-              >
-                <Lock size={15} />
-                <span>Lock App Now</span>
-              </button>
-            </div>
-          </form>
         </div>
 
-        {/* Card 2: Sell Signals & Profit Target Settings */}
-        <div className="gl-settings-card">
-          <div className="gl-card-head">
-            <div className="gl-card-head-top">
-              <div className="gl-icon-badge amber">
-                <Target size={22} />
+        {/* Section 2: Sell Signals & Profit Target Settings */}
+        <div>
+          {isMobile && <div className="gl-settings-section-tag">SELL SIGNAL PREFERENCES</div>}
+          <div className="gl-settings-card">
+            <div className="gl-card-head">
+              <div className="gl-card-head-top">
+                <div className="gl-icon-badge amber">
+                  <Target size={isMobile ? 18 : 22} />
+                </div>
+              </div>
+              <div>
+                <h3 className="gl-head-title">Sell Signal Targets</h3>
+                <p className="gl-head-desc">Customize default thresholds to trigger Strong Sell alerts</p>
               </div>
             </div>
-            <div>
-              <h3 className="gl-head-title">Sell Signal Targets</h3>
-              <p className="gl-head-desc">Customize default thresholds to trigger Strong Sell alerts</p>
-            </div>
+
+            {targetSuccess && (
+              <div className="gl-msg-banner success">
+                <CheckCircle2 size={16} />
+                <span>{targetSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveTargets}>
+              <div className={`gl-form-row ${isMobile ? "gl-mobile-two-col" : ""}`}>
+                <div className="gl-form-group">
+                  <label className="gl-label">{isMobile ? "Target (₹/g)" : "Target Profit (₹ per gram)"}</label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={10}
+                    value={targetMarginVal}
+                    onChange={(e) => setTargetMarginVal(e.target.value)}
+                    className="gl-input"
+                  />
+                </div>
+
+                <div className="gl-form-group">
+                  <label className="gl-label">{isMobile ? "Target (%)" : "Target Profit Margin (%)"}</label>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step={0.5}
+                    value={targetPctVal}
+                    onChange={(e) => setTargetPctVal(e.target.value)}
+                    className="gl-input"
+                  />
+                </div>
+              </div>
+
+              <div className="gl-btn-group">
+                <button
+                  type="submit"
+                  disabled={isSavingTarget}
+                  className="gl-btn-primary"
+                >
+                  <Save size={15} />
+                  <span>{isSavingTarget ? "Saving..." : "Save Profit Targets"}</span>
+                </button>
+              </div>
+            </form>
           </div>
-
-          {targetSuccess && (
-            <div className="gl-msg-banner success">
-              <CheckCircle2 size={16} />
-              <span>{targetSuccess}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSaveTargets}>
-            <div className="gl-form-row">
-              <div className="gl-form-group">
-                <label className="gl-label">Target Profit (₹ per gram)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={10}
-                  value={targetMarginVal}
-                  onChange={(e) => setTargetMarginVal(e.target.value)}
-                  className="gl-input"
-                />
-              </div>
-
-              <div className="gl-form-group">
-                <label className="gl-label">Target Profit Margin (%)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.5}
-                  value={targetPctVal}
-                  onChange={(e) => setTargetPctVal(e.target.value)}
-                  className="gl-input"
-                />
-              </div>
-            </div>
-
-            <div className="gl-btn-group">
-              <button
-                type="submit"
-                disabled={isSavingTarget}
-                className="gl-btn-primary"
-              >
-                <Save size={16} />
-                <span>{isSavingTarget ? "Saving..." : "Save Profit Targets"}</span>
-              </button>
-            </div>
-          </form>
         </div>
 
-        {/* Card 3: Database & Cloud Sync Details */}
-        <div className="gl-settings-card">
-          <div className="gl-card-head">
-            <div className="gl-card-head-top">
-              <div className="gl-icon-badge blue">
-                <Server size={22} />
+        {/* Section 3: Database & Cloud Sync Details */}
+        <div>
+          {isMobile && <div className="gl-settings-section-tag">DATABASE & CLOUD SYNC</div>}
+          <div className="gl-settings-card">
+            <div className="gl-card-head">
+              <div className="gl-card-head-top">
+                <div className="gl-icon-badge blue">
+                  <Server size={isMobile ? 18 : 22} />
+                </div>
+                <div className="gl-status-pill">
+                  <span className="gl-status-dot" />
+                  <span>Live & Connected</span>
+                </div>
               </div>
-              <div className="gl-status-pill">
-                <span className="gl-status-dot" />
-                <span>Live & Connected</span>
+              <div>
+                <h3 className="gl-head-title">Database & Cloud Synchronization</h3>
+                <p className="gl-head-desc">Live status of centralized MySQL database connection</p>
               </div>
             </div>
-            <div>
-              <h3 className="gl-head-title">Database & Cloud Synchronization</h3>
-              <p className="gl-head-desc">Live status of centralized MySQL database connection</p>
-            </div>
-          </div>
 
-          <div className="gl-db-info-grid">
-            <div className="gl-db-info-item">
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Target Host</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#0F172A", marginTop: 2 }}>145.79.209.121:3306</div>
-            </div>
-            <div className="gl-db-info-item">
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Database Schema</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#0F172A", marginTop: 2 }}>u248216155_kacha</div>
-            </div>
-            <div className="gl-db-info-item">
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Cloud API Endpoint</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#059669", marginTop: 2 }}>kacha-gold.onrender.com</div>
+            <div className="gl-db-info-grid">
+              <div className="gl-db-info-item">
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Target Host</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginTop: 2 }}>145.79.209.121:3306</div>
+              </div>
+              <div className="gl-db-info-item">
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Database Schema</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginTop: 2 }}>u248216155_kacha</div>
+              </div>
+              <div className="gl-db-info-item">
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Cloud API Endpoint</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#059669", marginTop: 2 }}>kacha-gold.onrender.com</div>
+              </div>
             </div>
           </div>
         </div>

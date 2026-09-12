@@ -84,7 +84,14 @@ const STYLES = `
   .gl-display { font-family: 'Montserrat', sans-serif; font-weight: 800; }
 
   /* App Container */
-  .gl-container { max-width: 1320px; width: 100%; margin: 0 auto; padding: 0 18px; }
+  .gl-container {
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: 18px;
+    padding-right: 18px;
+    box-sizing: border-box;
+  }
 
   /* Scrollable Body Container */
   .gl-body-scroll-wrap {
@@ -312,7 +319,10 @@ const STYLES = `
   }
 
   /* Content Wrapper */
-  .gl-body { padding: 12px 0 24px; }
+  .gl-body {
+    padding-top: 12px;
+    padding-bottom: 24px;
+  }
 
   /* Modern Elevated Cards */
   .gl-card {
@@ -429,7 +439,7 @@ const STYLES = `
   .gl-badge.sell-strong {
     background: #059669 !important;
     color: #FFFFFF !important;
-    border: none !important;
+    border: 1px solid transparent !important;
   }
   .gl-badge.sell-strong,
   .sell-strong,
@@ -523,40 +533,68 @@ const STYLES = `
     display: none;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: auto;
-    min-height: 64px;
-    background: rgba(255, 255, 255, 0.92);
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    min-height: calc(58px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid #E2E8F0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -3px 16px rgba(15, 23, 42, 0.05);
     z-index: 9999;
-    padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px)) 6px;
     justify-content: space-around;
-    align-items: center;
+    align-items: stretch;
+    box-sizing: border-box;
   }
   .gl-mobile-nav-item {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 3px;
-    font-size: 10px;
-    font-weight: 600;
-    color: #64748B;
-    background: transparent;
+    justify-content: flex-start;
+    padding: 3px 2px 2px 2px;
     border: none;
-    padding: 6px 4px;
-    border-radius: 10px;
+    background: transparent;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
   }
-  .gl-mobile-nav-item.active {
-    color: #059669;
-    font-weight: 800;
+  .gl-mobile-nav-icon-box {
+    height: 26px;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+  .gl-mobile-nav-item.active .gl-mobile-nav-icon-box {
     background: #ECFDF5;
+  }
+  .gl-mobile-nav-label {
+    font-size: 10px;
+    line-height: 1.15;
+    font-weight: 600;
+    color: #64748B;
+    text-align: center;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    height: 22px;
+    width: 100%;
+    overflow: hidden;
+    letter-spacing: -0.1px;
+    transition: color 0.15s ease;
+  }
+  .gl-mobile-nav-item.active .gl-mobile-nav-label {
+    color: #047857;
+    font-weight: 800;
   }
 
   /* Mobile More Drawer Sheet */
@@ -709,11 +747,23 @@ const STYLES = `
 
   @media (max-width: 640px) {
     .gl-root { padding-bottom: 0; }
-    .gl-body-scroll-wrap { padding-bottom: calc(105px + env(safe-area-inset-bottom, 0px)); }
-    .gl-container { padding: 0 12px; }
+    .gl-body-scroll-wrap {
+      padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+      padding-top: 6px;
+    }
+    .gl-container {
+      padding-left: calc(16px + env(safe-area-inset-left, 0px)) !important;
+      padding-right: calc(16px + env(safe-area-inset-right, 0px)) !important;
+      box-sizing: border-box;
+    }
+    .gl-body {
+      padding-top: 8px;
+      padding-bottom: 20px;
+    }
 
-    .gl-header-wrap { padding: calc(14px + env(safe-area-inset-top, 0px)) 0 0; }
-    .gl-header { flex-direction: row; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 10px; }
+    .gl-header-wrap { padding: calc(10px + env(safe-area-inset-top, 0px)) 0 0; }
+    .gl-header { flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 10px; }
+    .gl-card { padding: 14px 14px; margin-bottom: 12px; border-radius: 16px; }
 
     .gl-mobile-bottom-bar { display: flex; }
     .gl-tabs-wrapper { display: none; }
@@ -815,7 +865,7 @@ const MOBILE_MAIN_TABS = [
   { id: "signals", path: "/signals", label: "Sell Signals", icon: Target },
   { id: "dashboard", path: "/dashboard", label: "Kacha Update", icon: LayoutGrid },
   { id: "add", path: "/add", label: "Add Gold", icon: Plus },
-  { id: "ledger", path: "/purchases", label: "Purchase List", icon: Table2 },
+  { id: "ledger", path: "/purchases", label: "Purchases", icon: Table2 },
 ];
 
 export default function App() {
@@ -1290,109 +1340,136 @@ export default function App() {
     <div className="gl-root">
       <style>{STYLES}</style>
 
-      {/* Isolated Content Scroll Area */}
-      <div className="gl-body-scroll-wrap" ref={scrollRef}>
-        {/* Premium Header */}
-        <header className="gl-header-wrap">
-          <div className="gl-container gl-header">
-            <div className="gl-header-brand">
-              <div className="gl-brand-icon">
-                <img
-                  src={`${import.meta.env.BASE_URL}logo.png`}
-                  alt="VMoney Gold Logo"
-                  style={{
-                    width: isMobile ? 31 : 34,
-                    height: isMobile ? 31 : 34,
-                    objectFit: "contain"
-                  }}
-                />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <h1 className="gl-brand-title">VMG Kacha Gold</h1>
-                <p className="gl-brand-sub">Live Rate Tracking, Price Graphs & Intelligent Sell Advice</p>
-              </div>
+      {/* Fixed Native Top App Bar Header */}
+      <header className="gl-header-wrap">
+        <div className="gl-container gl-header">
+          <div className="gl-header-brand">
+            <div className="gl-brand-icon">
+              <img
+                src={`${import.meta.env.BASE_URL}logo.png`}
+                alt="VMoney Gold Logo"
+                style={{
+                  width: isMobile ? 28 : 34,
+                  height: isMobile ? 28 : 34,
+                  objectFit: "contain"
+                }}
+              />
             </div>
+            <div style={{ minWidth: 0 }}>
+              <h1 className="gl-brand-title" style={{ fontSize: isMobile ? 15.5 : 19 }}>VMG Kacha Gold</h1>
+              {!isMobile && (
+                <p className="gl-brand-sub">Live Rate Tracking, Price Graphs & Intelligent Sell Advice</p>
+              )}
+            </div>
+          </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 10 }}>
+            {isMobile ? (
+              /* Sleek Mobile Live Rate Ticker Pill */
+              <div
+                onClick={() => handleOpenKachaHistory(null)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "#ECFDF5",
+                  border: "1px solid #A7F3D0",
+                  borderRadius: 9999,
+                  padding: "4px 9px",
+                  fontSize: 11.5,
+                  fontWeight: 800,
+                  color: "#047857",
+                  cursor: "pointer",
+                  boxShadow: "0 1px 2px rgba(5, 150, 105, 0.08)"
+                }}
+              >
+                <span style={{ fontSize: 9.5, color: "#065F46", textTransform: "uppercase", fontWeight: 700 }}>Kacha</span>
+                <span>{kachaPerGram ? inr(kachaPerGram) : "—"}</span>
+              </div>
+            ) : (
               <div className="gl-quick-stat-strip">
                 <div>
                   <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Board (22K)</div>
-                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#0F172A" }}>{latestRate ? inr(latestRate.board) : "—"}</div>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: "#0F172A" }}>{latestRate ? inr(latestRate.board) : "—"}</div>
                 </div>
                 <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
                 <div>
                   <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Kacha</div>
-                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: "#B45309" }}>{kachaPerGram ? inr(kachaPerGram) : "—"}</div>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: "#B45309" }}>{kachaPerGram ? inr(kachaPerGram) : "—"}</div>
                 </div>
                 <div style={{ width: 1, height: 22, background: "#CBD5E1" }} />
                 <div>
                   <div style={{ fontSize: 9.5, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>Portfolio P/L</div>
-                  <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 900, color: totals.unrealized >= 0 ? "#15803D" : "#DC2626" }}>
-                    {totals.unrealized !== null ? (isMobile ? fmtCompactINR(totals.unrealized) : ((totals.unrealized >= 0 ? "+" : "") + inr(totals.unrealized))) : "—"}
+                  <div style={{ fontSize: 15, fontWeight: 900, color: totals.unrealized >= 0 ? "#15803D" : "#DC2626" }}>
+                    {totals.unrealized !== null ? ((totals.unrealized >= 0 ? "+" : "") + inr(totals.unrealized)) : "—"}
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Lock Button (Always positioned on top right corner on both mobile and desktop) */}
-              <button
-                type="button"
-                onClick={handleLockApp}
-                title="Lock Application"
-                className="gl-header-lock-btn"
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #E2E8F0",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  color: "#475569",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-                  transition: "all 0.15s ease",
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#DC2626";
-                  e.currentTarget.style.borderColor = "#FECACA";
-                  e.currentTarget.style.backgroundColor = "#FEF2F2";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#475569";
-                  e.currentTarget.style.borderColor = "#E2E8F0";
-                  e.currentTarget.style.backgroundColor = "#FFFFFF";
-                }}
-              >
-                <Lock size={16} />
-              </button>
+            {/* Lock Button */}
+            <button
+              type="button"
+              onClick={handleLockApp}
+              title="Lock Application"
+              className="gl-header-lock-btn"
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: isMobile ? 32 : 36,
+                height: isMobile ? 32 : 36,
+                borderRadius: 10,
+                color: "#475569",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+                transition: "all 0.15s ease",
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#DC2626";
+                e.currentTarget.style.borderColor = "#FECACA";
+                e.currentTarget.style.backgroundColor = "#FEF2F2";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#475569";
+                e.currentTarget.style.borderColor = "#E2E8F0";
+                e.currentTarget.style.backgroundColor = "#FFFFFF";
+              }}
+            >
+              <Lock size={isMobile ? 14 : 16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Header Tabs (Desktop Only) */}
+        <div className="gl-tabs-wrapper">
+          <div className="gl-container">
+            <div className="gl-tabs">
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                const active = isTabActive(t.path);
+                return (
+                  <button key={t.id} className={`gl-tab ${active ? "active" : ""}`} onClick={() => navigate(t.path)}>
+                    <Icon size={15} />
+                    <span>{t.label}</span>
+                    {t.id === "signals" && sellAnalysis && sellAnalysis.strongSellCount > 0 && (
+                      <span className="gl-pulse-sell" style={{ background: "#059669", color: "#FFFFFF", borderRadius: 10, padding: "2px 7px", fontSize: 10, fontWeight: 900, marginLeft: 2 }}>
+                        {sellAnalysis.strongSellCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* Header Tabs */}
-          <div className="gl-tabs-wrapper">
-            <div className="gl-container">
-              <div className="gl-tabs">
-                {TABS.map((t) => {
-                  const Icon = t.icon;
-                  const active = isTabActive(t.path);
-                  return (
-                    <button key={t.id} className={`gl-tab ${active ? "active" : ""}`} onClick={() => navigate(t.path)}>
-                      <Icon size={15} />
-                      <span>{t.label}</span>
-                      {t.id === "signals" && sellAnalysis && sellAnalysis.strongSellCount > 0 && (
-                        <span className="gl-pulse-sell" style={{ background: "#059669", color: "#FFFFFF", borderRadius: 10, padding: "2px 7px", fontSize: 10, fontWeight: 900, marginLeft: 2 }}>
-                          {sellAnalysis.strongSellCount}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </header>
+      {/* Isolated Content Scroll Area */}
+      <div className="gl-body-scroll-wrap" ref={scrollRef}>
 
         <main className="gl-container gl-body">
           {/* Time Filters Toolbar (Only on Signals, Purchases & Trends) */}
@@ -1544,8 +1621,10 @@ export default function App() {
                 navigate(t.path);
               }}
             >
-              <Icon size={19} color={active ? "#107C41" : "#475569"} />
-              <span>{t.label}</span>
+              <div className="gl-mobile-nav-icon-box">
+                <Icon size={19} color={active ? "#047857" : "#64748B"} />
+              </div>
+              <span className="gl-mobile-nav-label">{t.label}</span>
             </button>
           );
         })}
@@ -1559,8 +1638,10 @@ export default function App() {
               className={`gl-mobile-nav-item ${isMoreActive ? "active" : ""}`}
               onClick={() => setShowMobileMore((prev) => !prev)}
             >
-              <MoreHorizontal size={20} color={isMoreActive ? "#107C41" : "#475569"} />
-              <span>More</span>
+              <div className="gl-mobile-nav-icon-box">
+                <MoreHorizontal size={20} color={isMoreActive ? "#047857" : "#64748B"} />
+              </div>
+              <span className="gl-mobile-nav-label">More</span>
             </button>
           );
         })()}

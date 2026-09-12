@@ -89,7 +89,7 @@ export default function DashboardPage({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "14px" : "20px", paddingTop: isMobile ? 4 : 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "12px" : "20px", paddingTop: isMobile ? 2 : 8, paddingBottom: 24 }}>
       {/* 1. Active Market Rates Banner */}
       {latestRate && (
         <div
@@ -97,36 +97,63 @@ export default function DashboardPage({
           style={{
             margin: 0,
             padding: isMobile ? "14px 16px" : "16px 24px",
-            background: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            borderRadius: 14,
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)"
+            background: isMobile ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)" : "#FFFFFF",
+            color: isMobile ? "#FFFFFF" : "#0F172A",
+            border: isMobile ? "none" : "1px solid #E2E8F0",
+            borderRadius: isMobile ? 18 : 14,
+            boxShadow: isMobile ? "0 4px 20px -2px rgba(15, 23, 42, 0.2)" : "0 1px 3px rgba(0, 0, 0, 0.04)"
           }}
         >
           {isMobile ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <CheckCircle2 size={16} color="#059669" />
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", letterSpacing: "0.2px" }}>
-                    Market Rates Active
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Active Market Rates
                   </span>
                 </div>
-                <span style={{ background: "#FFFBEB", color: "#B45309", border: "1px solid #FDE68A", fontSize: 11, padding: "2px 8px", borderRadius: 6, fontWeight: 700 }}>
+                <span style={{ background: "rgba(255, 255, 255, 0.1)", color: "#E2E8F0", fontSize: 10.5, padding: "2px 8px", borderRadius: 9999, fontWeight: 700 }}>
                   {fmtDate(latestRate.date)}
                 </span>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: "#F8FAFC", padding: "10px 14px", borderRadius: 10, border: "1px solid #F1F5F9" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: "rgba(255, 255, 255, 0.05)", padding: "10px 14px", borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.08)" }}>
                 <div>
-                  <div style={{ fontSize: 10.5, color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>Board (22K)</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "#D97706", marginTop: 2 }}>{inr(latestRate.board)}<span style={{ fontSize: 11, color: "#94A3B8" }}>/g</span></div>
+                  <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, textTransform: "uppercase" }}>Board (22K)</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#FBBF24", marginTop: 2 }}>{inr(latestRate.board)}<span style={{ fontSize: 11, color: "#94A3B8" }}>/g</span></div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10.5, color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>Kacha Rate</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "#059669", marginTop: 2 }}>{inr(kachaPerGram)}</div>
+                  <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, textTransform: "uppercase" }}>Kacha Rate</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#34D399", marginTop: 2 }}>{inr(kachaPerGram)}</div>
                 </div>
               </div>
+
+              {/* Inline Mobile Sell Signal Notice */}
+              {sellAnalysis && sellAnalysis.strongSellCount > 0 && (
+                <div
+                  onClick={goToSignals}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "rgba(16, 185, 129, 0.18)",
+                    border: "1px solid rgba(52, 211, 153, 0.3)",
+                    borderRadius: 10,
+                    padding: "7px 12px",
+                    cursor: "pointer",
+                    marginTop: 2
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Sparkles size={13} color="#34D399" />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#34D399" }}>
+                      {sellAnalysis.strongSellCount} Lots Ready to Sell ({sellAnalysis.strongSellGrams.toFixed(2)}g)
+                    </span>
+                  </div>
+                  <ArrowUpRight size={13} color="#34D399" />
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
@@ -174,15 +201,15 @@ export default function DashboardPage({
         </div>
       )}
 
-      {/* 2. Compact Minimal Sell Signal Alert Banner */}
-      {sellAnalysis && sellAnalysis.strongSellCount > 0 && (
+      {/* 2. Desktop-Only Sell Signal Alert Banner */}
+      {!isMobile && sellAnalysis && sellAnalysis.strongSellCount > 0 && (
         <div
           onClick={goToSignals}
           style={{
             background: "linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%)",
             border: "1px solid #A7F3D0",
             borderRadius: 14,
-            padding: isMobile ? "12px 14px" : "14px 20px",
+            padding: "14px 20px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -196,7 +223,7 @@ export default function DashboardPage({
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Sparkles size={16} color="#059669" />
             </div>
-            <span style={{ fontSize: isMobile ? 13 : 14.5, fontWeight: 800, color: "#065F46", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span style={{ fontSize: 14.5, fontWeight: 800, color: "#065F46", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {sellAnalysis.strongSellCount} Lots Ready to Sell ({sellAnalysis.strongSellGrams.toFixed(2)}g)
             </span>
           </div>
@@ -208,8 +235,8 @@ export default function DashboardPage({
               goToSignals();
             }}
             style={{
-              padding: isMobile ? "6px 12px" : "8px 16px",
-              fontSize: isMobile ? 12 : 13,
+              padding: "8px 16px",
+              fontSize: 13,
               borderRadius: 8,
               whiteSpace: "nowrap",
               flexShrink: 0,
@@ -224,17 +251,17 @@ export default function DashboardPage({
       )}
 
       {/* 3. Dual Cards Grid */}
-      <div className="gl-grid2" style={{ gap: isMobile ? "14px" : "20px" }}>
+      <div className="gl-grid2" style={{ gap: isMobile ? "12px" : "20px" }}>
         {/* Market Rate Entry Card */}
-        <div className="gl-card" style={{ padding: isMobile ? "18px 16px" : "24px 26px", margin: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div className="gl-card" style={{ padding: isMobile ? "16px 14px" : "24px 26px", margin: 0, borderRadius: isMobile ? 16 : 14, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isMobile ? 14 : 20, gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isMobile ? 12 : 20, gap: 8 }}>
               <div style={{ minWidth: 0 }}>
-                <div className="gl-section-title" style={{ margin: 0, fontSize: isMobile ? 16 : 18, fontWeight: 800, color: "#0F172A" }}>
+                <div className="gl-section-title" style={{ margin: 0, fontSize: isMobile ? 15 : 18, fontWeight: 800, color: "#0F172A" }}>
                   Daily Market Rate
                 </div>
                 {latestRate && (
-                  <div style={{ fontSize: isMobile ? 11.5 : 12.5, color: "#059669", fontWeight: 700, marginTop: 2 }}>
+                  <div style={{ fontSize: isMobile ? 11 : 12.5, color: "#059669", fontWeight: 700, marginTop: 2 }}>
                     Active: {inr(kachaPerGram)}
                   </div>
                 )}
@@ -244,15 +271,15 @@ export default function DashboardPage({
                 className="gl-btn-ghost gl-btn-sm"
                 onClick={autoFetchRate}
                 disabled={fetchingRate}
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 700, fontSize: isMobile ? 11.5 : 12.5, padding: isMobile ? "6px 10px" : "6px 14px", flexShrink: 0 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 700, fontSize: isMobile ? 11 : 12.5, padding: isMobile ? "5px 10px" : "6px 14px", flexShrink: 0, borderRadius: 8 }}
               >
-                <Zap size={13} className={fetchingRate ? "gl-spin" : ""} color="#059669" />
+                <Zap size={12} className={fetchingRate ? "gl-spin" : ""} color="#059669" />
                 {fetchingRate ? "Fetching…" : "Auto-Fetch 22K"}
               </button>
             </div>
 
             {/* Side-by-Side Inputs */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isMobile ? "12px" : "16px", marginBottom: isMobile ? 16 : 22 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isMobile ? "10px" : "16px", marginBottom: isMobile ? 14 : 22 }}>
               <div>
                 <label className="gl-input-label" style={{ fontSize: isMobile ? 11.5 : 12, marginBottom: 6, fontWeight: 700, color: "#475569" }}>Board Rate (₹/g, 22K)</label>
                 <input className="gl-input" type="number" inputMode="decimal" placeholder="Auto-fetched" value={board} onChange={(e) => setBoard(e.target.value)} style={{ fontSize: isMobile ? 14.5 : 15, padding: isMobile ? "10px 12px" : "10px 14px", fontWeight: 700 }} />
