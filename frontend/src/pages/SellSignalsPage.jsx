@@ -31,10 +31,19 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
     setTimeout(() => setSavedNotice(false), 2000);
   };
 
+  const activePurchases = useMemo(() => {
+    return (purchases || []).filter((p) => !p.isSold);
+  }, [purchases]);
+
   const items = useMemo(() => {
-    if (!purchases || !purchases.length) return [];
-    const list = purchases.map((p) => {
-      const pk = p.purchaseKacha !== undefined && p.purchaseKacha !== null ? p.purchaseKacha : (p.kachaAtPurchase || p.ratePaid || activeSellRate);
+    if (!activePurchases || !activePurchases.length) return [];
+    const list = activePurchases.map((p) => {
+      const rateObj = rateForDate ? rateForDate(p.date) : null;
+      const pk = (p.purchaseKacha !== undefined && p.purchaseKacha !== null)
+        ? p.purchaseKacha
+        : ((p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
+          ? p.kachaAtPurchase
+          : (p.ratePaid || (rateObj ? rateObj.kacha : activeSellRate)));
       const ak = p.activeKacha !== undefined && p.activeKacha !== null ? p.activeKacha : activeSellRate;
       const margin = ak - pk;
       const marginPct = pk > 0 ? (margin / pk) * 100 : 0;
@@ -59,15 +68,25 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
     });
 
     return sortOrder === "asc" ? list.sort(compareEntriesAsc) : list.sort(compareEntriesDesc);
-  }, [purchases, activeSellRate, targetProfitPct, sortOrder]);
+  }, [activePurchases, activeSellRate, targetProfitPct, sortOrder, rateForDate]);
 
   const totalHoldingsGrams = useMemo(() => {
-    return purchases.reduce((sum, p) => sum + (p.grams || 0), 0);
-  }, [purchases]);
+    return activePurchases.reduce((sum, p) => sum + (p.grams || 0), 0);
+  }, [activePurchases]);
 
   const totalSellProfit = useMemo(() => {
     return items.reduce((sum, it) => sum + (it.itemProfit || 0), 0);
   }, [items]);
+
+  const strongSellItems = useMemo(() => {
+    return items.filter((x) => x.status === "STRONG_SELL");
+  }, [items]);
+
+  const strongSellCount = strongSellItems.length;
+
+  const targetRealizableProfit = useMemo(() => {
+    return strongSellItems.reduce((sum, it) => sum + (it.itemProfit || 0), 0);
+  }, [strongSellItems]);
 
   const sellableItems = useMemo(() => {
     return items.filter((x) => x.status === "STRONG_SELL" || x.status === "MODERATE_SELL");
@@ -82,7 +101,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
 
   const navigate = useNavigate();
 
-  if (!purchases.length) {
+  if (!activePurchases.length) {
     return (
       <EmptyState
         icon={Target}
@@ -285,15 +304,15 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
               <div style={{ fontSize: 10.5, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 Target Realizable Profit
               </div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: totalSellProfit >= 0 ? "#10B981" : "#F87171", marginTop: 2, letterSpacing: "-0.5px" }}>
-                {totalSellProfit >= 0 ? "+" : ""}{inr(totalSellProfit)}
+              <div style={{ fontSize: 24, fontWeight: 800, color: targetRealizableProfit >= 0 ? "#10B981" : "#F87171", marginTop: 2, letterSpacing: "-0.5px" }}>
+                {targetRealizableProfit >= 0 ? "+" : ""}{inr(targetRealizableProfit)}
               </div>
             </div>
 
             <div style={{
-              background: sellAnalysis && sellAnalysis.strongSellCount > 0 ? "rgba(16, 185, 129, 0.2)" : "rgba(255, 255, 255, 0.1)",
-              color: sellAnalysis && sellAnalysis.strongSellCount > 0 ? "#34D399" : "#E2E8F0",
-              border: `1px solid ${sellAnalysis && sellAnalysis.strongSellCount > 0 ? "rgba(52, 211, 153, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
+              background: strongSellCount > 0 ? "rgba(16, 185, 129, 0.2)" : "rgba(255, 255, 255, 0.1)",
+              color: strongSellCount > 0 ? "#34D399" : "#E2E8F0",
+              border: `1px solid ${strongSellCount > 0 ? "rgba(52, 211, 153, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
               padding: "4px 10px",
               borderRadius: 9999,
               fontSize: 11,
@@ -303,7 +322,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
               gap: 4
             }}>
               <Sparkles size={12} />
-              {sellAnalysis ? sellAnalysis.strongSellCount : 0} of {purchases.length} Ready
+              {strongSellCount} of {items.length} Ready
             </div>
           </div>
 
@@ -326,7 +345,7 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
             </div>
             <div>
               <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, textTransform: "uppercase" }}>Target Met</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#FFFFFF", marginTop: 2 }}>{sellAnalysis ? sellAnalysis.strongSellCount : 0} / {purchases.length}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#FFFFFF", marginTop: 2 }}>{strongSellCount} / {items.length}</div>
             </div>
           </div>
 
@@ -376,11 +395,11 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
             </div>
             <div style={{ padding: "12px 14px", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>Lots Meeting Target</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669", marginTop: 4 }}>{sellAnalysis ? sellAnalysis.strongSellCount : 0} / {purchases.length}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669", marginTop: 4 }}>{strongSellCount} / {items.length}</div>
             </div>
             <div style={{ padding: "12px 14px", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>Target Realizable Profit</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: totalSellProfit >= 0 ? "#059669" : "#DC2626", marginTop: 4 }}>{totalSellProfit >= 0 ? "+" : ""}{inr(totalSellProfit)}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: targetRealizableProfit >= 0 ? "#059669" : "#DC2626", marginTop: 4 }}>{targetRealizableProfit >= 0 ? "+" : ""}{inr(targetRealizableProfit)}</div>
             </div>
             <div style={{ padding: "12px 14px", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 8, textAlign: "center", cursor: "pointer" }} onClick={() => onOpenKachaHistory && onOpenKachaHistory(null)}>
               <div style={{ fontSize: 11, color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>7-Day High</div>

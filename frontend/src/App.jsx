@@ -1267,9 +1267,11 @@ export default function App() {
 
     activeList.forEach((p) => {
       const rateObj = rateForDate(p.date);
-      const purchaseKacha = (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
-        ? p.kachaAtPurchase
-        : (rateObj ? rateObj.kacha : (p.ratePaid || kachaPerGram));
+      const purchaseKacha = (p.purchaseKacha !== undefined && p.purchaseKacha !== null)
+        ? p.purchaseKacha
+        : ((p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
+          ? p.kachaAtPurchase
+          : (p.ratePaid || (rateObj ? rateObj.kacha : kachaPerGram)));
       const activeKacha = kachaPerGram !== null ? kachaPerGram : purchaseKacha;
 
       if (activeKacha !== null && purchaseKacha !== null) {
@@ -1284,7 +1286,7 @@ export default function App() {
   }, [filteredPurchases, kachaPerGram, rateForDate]);
 
   const sellAnalysis = useMemo(() => {
-    const activePurchases = purchases.filter((p) => !p.isSold);
+    const activePurchases = (filteredPurchases || purchases).filter((p) => !p.isSold);
     if (!kachaPerGram || !activePurchases.length) return null;
 
     let strongSellGrams = 0;
@@ -1294,9 +1296,11 @@ export default function App() {
 
     const items = activePurchases.map((p) => {
       const rateObj = rateForDate(p.date);
-      const purchaseKacha = (p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
-        ? p.kachaAtPurchase
-        : (rateObj ? rateObj.kacha : (p.ratePaid || kachaPerGram));
+      const purchaseKacha = (p.purchaseKacha !== undefined && p.purchaseKacha !== null)
+        ? p.purchaseKacha
+        : ((p.kachaAtPurchase !== undefined && p.kachaAtPurchase !== null)
+          ? p.kachaAtPurchase
+          : (p.ratePaid || (rateObj ? rateObj.kacha : kachaPerGram)));
       const activeKacha = kachaPerGram;
 
       const margin = (activeKacha !== null && purchaseKacha !== null) ? activeKacha - purchaseKacha : 0;
@@ -1324,11 +1328,11 @@ export default function App() {
       strongSellProfit,
       strongSellCount,
       totalSellableValue,
-      count: purchases.length,
+      count: activePurchases.length,
       kachaPerGram,
       targetProfitPct
     };
-  }, [purchases, kachaPerGram, rateForDate, targetProfitPct]);
+  }, [filteredPurchases, purchases, kachaPerGram, rateForDate, targetProfitPct]);
 
   const requestConfirm = (config) => setConfirmState(config);
 
@@ -1510,7 +1514,7 @@ export default function App() {
                       persistTarget={persistTarget}
                       kachaPerGram={kachaPerGram}
                       highMetrics={highMetrics}
-                      purchases={filteredPurchases}
+                      purchases={filteredPurchases.filter((p) => !p.isSold)}
                       rateForDate={rateForDate}
                       totals={totals}
                       sortedRates={filteredRates}
