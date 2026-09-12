@@ -709,22 +709,24 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "6px 10px",
                   padding: "8px 12px",
                   background: item.itemProfit >= 0 ? "#ECFDF5" : "#FEF2F2",
                   border: `1px solid ${item.itemProfit >= 0 ? "#A7F3D0" : "#FCA5A5"}`,
                   borderRadius: 10
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>Margin:</span>
-                    <span style={{ fontSize: 12.5, fontWeight: 800, color: item.margin >= 0 ? "#047857" : "#DC2626" }}>
-                      {item.margin >= 0 ? "+" : ""}{inr(item.margin)}/g
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", whiteSpace: "nowrap" }}>Margin:</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: item.margin >= 0 ? "#047857" : "#DC2626", whiteSpace: "nowrap" }}>
+                      {`${item.margin >= 0 ? "+" : ""}${inr(item.margin)}/g`}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>Lot P/L:</span>
-                    <span style={{ fontSize: 13.5, fontWeight: 800, color: item.itemProfit >= 0 ? "#047857" : "#DC2626" }}>
-                      {item.itemProfit >= 0 ? "+" : ""}{inr(item.itemProfit)} ({item.marginPct.toFixed(1)}%)
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", whiteSpace: "nowrap" }}>Lot P/L:</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: item.itemProfit >= 0 ? "#047857" : "#DC2626", whiteSpace: "nowrap" }}>
+                      {`${item.itemProfit >= 0 ? "+" : ""}${inr(item.itemProfit)} (${item.marginPct.toFixed(1)}%)`}
                     </span>
                   </div>
                 </div>

@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload }) => {
         {data.kachaRate ? (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
             <span style={{ color: "#E2E8F0" }}>Market Kacha:</span>
-            <strong style={{ color: "#FFFFFF", fontSize: 14, fontWeight: 900, fontFamily: "'Consolas', monospace" }}>
+            <strong style={{ color: "#FFFFFF", fontSize: 14, fontWeight: 800, fontFamily: "'Manrope', sans-serif" }}>
               {inr(data.kachaRate)}
             </strong>
           </div>
@@ -370,9 +370,9 @@ export default function PriceGraphPage({ sortedRates, purchases, totals, targetP
             <div
               style={{
                 fontSize: isMobile ? 24 : 30,
-                fontWeight: 900,
+                fontWeight: 800,
                 color: "#0F172A",
-                fontFamily: "'Consolas', monospace, sans-serif"
+                fontFamily: "'Manrope', sans-serif"
               }}
             >
               {inr(currentPrice)}

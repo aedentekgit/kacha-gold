@@ -360,7 +360,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                   <Coins size={18} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0F172A", fontFamily: "'Montserrat', sans-serif" }}>Purchase Entry Details</h3>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#0F172A", fontFamily: "'Manrope', sans-serif" }}>Purchase Entry Details</h3>
                   <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>Logged on {fmtDate(viewingPurchase.date)}</span>
                 </div>
               </div>

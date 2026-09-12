@@ -132,7 +132,7 @@ export default function SettingsPage({
         }
 
         .gl-settings-title {
-          font-family: 'Montserrat', sans-serif !important;
+          font-family: 'Manrope', sans-serif !important;
           font-size: 22px;
           font-weight: 800;
           color: #0F172A;
@@ -140,9 +140,11 @@ export default function SettingsPage({
         }
 
         .gl-settings-sub {
+          font-family: 'Manrope', sans-serif;
           font-size: 13.5px;
           color: #64748B;
           margin: 0;
+          font-weight: 500;
         }
 
         .gl-settings-grid {
@@ -197,19 +199,21 @@ export default function SettingsPage({
         }
 
         .gl-head-title {
-          font-family: 'Montserrat', sans-serif !important;
+          font-family: 'Manrope', sans-serif !important;
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 700;
           color: #0F172A;
           margin: 0 0 4px 0;
           letter-spacing: -0.2px;
         }
 
         .gl-head-desc {
+          font-family: 'Manrope', sans-serif;
           font-size: 13px;
           color: #64748B;
           margin: 0;
           line-height: 1.45;
+          font-weight: 500;
         }
 
         .gl-form-row {

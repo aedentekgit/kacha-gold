@@ -81,7 +81,7 @@ export default function EditPurchaseModal({ item, isOpen, onClose, onSave }) {
             }}>
               <Pencil size={18} />
             </div>
-            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#1C1917", fontFamily: "'Montserrat', sans-serif" }}>
+            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#1C1917", fontFamily: "'Manrope', sans-serif" }}>
               Edit Purchase Entry
             </h3>
           </div>
@@ -131,8 +131,24 @@ export default function EditPurchaseModal({ item, isOpen, onClose, onSave }) {
                 {image ? "Change Photo" : "Upload Photo"}
               </button>
               {image && (
-                <button className="gl-btn-ghost gl-btn-sm" onClick={() => setImage(null)} style={{ borderColor: "#FECACA", color: "#B91C1C" }}>
-                  Remove
+                <button
+                  type="button"
+                  className="gl-btn-ghost gl-btn-sm"
+                  onClick={() => setImage(null)}
+                  style={{
+                    borderColor: "#FECACA",
+                    color: "#DC2626",
+                    background: "#FEF2F2",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 5,
+                    padding: "5px 10px",
+                    lineHeight: 1
+                  }}
+                >
+                  <X size={13} style={{ display: "block", flexShrink: 0 }} />
+                  <span style={{ display: "inline-block", lineHeight: 1 }}>Remove</span>
                 </button>
               )}
               <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageChange} />

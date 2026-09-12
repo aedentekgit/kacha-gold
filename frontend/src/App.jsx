@@ -69,7 +69,7 @@ const STYLES = `
     background-color: #F8FAFC;
   }
   .gl-root { 
-    font-family: 'Ubuntu', -apple-system, BlinkMacSystemFont, sans-serif; 
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; 
     color: #0F172A; 
     background: #F8FAFC; 
     height: 100vh; 
@@ -78,10 +78,11 @@ const STYLES = `
     overflow: hidden;
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
+    font-weight: 500;
   }
   .gl-root * { box-sizing: border-box; }
-  .gl-serif { font-family: 'Consolas', monospace, sans-serif; font-weight: 800; letter-spacing: -0.3px; }
-  .gl-display { font-family: 'Montserrat', sans-serif; font-weight: 800; }
+  .gl-serif { font-family: 'Manrope', monospace, sans-serif; font-weight: 800; letter-spacing: -0.3px; }
+  .gl-display { font-family: 'Manrope', sans-serif; font-weight: 800; }
 
   /* App Container */
   .gl-container {
@@ -154,9 +155,9 @@ const STYLES = `
     box-shadow: 0 2px 6px rgba(184, 134, 11, 0.12);
   }
   .gl-brand-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Manrope', sans-serif;
     font-size: 19px;
-    font-weight: 800;
+    font-weight: 700;
     margin: 0;
     color: #0F172A;
     letter-spacing: -0.3px;
@@ -166,7 +167,7 @@ const STYLES = `
     font-size: 11px;
     color: #059669;
     margin: 1px 0 0;
-    font-weight: 600;
+    font-weight: 500;
     white-space: nowrap;
     letter-spacing: 0.2px;
   }
@@ -182,7 +183,8 @@ const STYLES = `
     color: #0F172A;
     white-space: nowrap;
     flex-shrink: 0;
-    font-family: 'Ubuntu', sans-serif;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
   }
 
   /* Tabs Bar */
@@ -212,7 +214,7 @@ const STYLES = `
     border-radius: 8px;
     cursor: pointer;
     white-space: nowrap;
-    font-family: inherit;
+    font-family: 'Manrope', sans-serif;
     flex-shrink: 0;
     transition: all 0.2s ease;
   }
@@ -221,7 +223,7 @@ const STYLES = `
     color: #059669;
     background: #ECFDF5;
     border-color: #A7F3D0;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   /* Filter Toolbar */
@@ -342,16 +344,16 @@ const STYLES = `
   .gl-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
   /* Text & Labels */
-  .gl-label { font-size: 11px; color: #64748B; font-weight: 700; text-transform: uppercase; font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px; }
-  .gl-value { font-size: 14px; font-weight: 700; color: #0F172A; font-family: 'Ubuntu', sans-serif; }
-  .gl-value-lg { font-family: 'Ubuntu', sans-serif; font-size: 24px; font-weight: 800; color: #059669; }
+  .gl-label { font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; font-family: 'Manrope', sans-serif; letter-spacing: 0.5px; }
+  .gl-value { font-size: 14px; font-weight: 700; color: #0F172A; font-family: 'Manrope', sans-serif; }
+  .gl-value-lg { font-family: 'Manrope', sans-serif; font-size: 24px; font-weight: 800; color: #059669; }
   .gl-section-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Manrope', sans-serif;
     font-size: 16px;
     color: #0F172A;
     margin: 0 0 12px;
     letter-spacing: -0.2px;
-    font-weight: 800;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -404,10 +406,24 @@ const STYLES = `
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
     transition: all 0.15s ease;
   }
   .gl-btn-ghost:hover { background: #ECFDF5; border-color: #A7F3D0; color: #047857; }
-  .gl-btn-sm { padding: 5px 12px; font-size: 11.5px; border-radius: 6px; }
+  .gl-btn-sm {
+    padding: 5px 10px;
+    font-size: 11.5px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1;
+  }
 
   /* Sleek Badges */
   .gl-badge {
@@ -506,18 +522,20 @@ const STYLES = `
     margin: 4px 0;
     font-size: 20px;
     font-weight: 800;
-    font-family: 'Ubuntu', sans-serif;
+    font-family: 'Manrope', sans-serif;
   }
   .gl-hero-sub {
     font-size: 11px;
     line-height: 1.3;
+    font-weight: 500;
+    color: #64748B;
   }
 
   /* Table Grid Styling */
   .gl-table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid #E2E8F0; }
-  .gl-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; font-family: 'Ubuntu', sans-serif; }
-  .gl-table th { background: #F8FAFC; color: #475569; padding: 12px 16px; font-weight: 700; text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; font-family: 'Montserrat', sans-serif; }
-  .gl-table td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; color: #0F172A; vertical-align: middle; font-weight: 600; font-size: 13.5px; }
+  .gl-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; font-family: 'Manrope', sans-serif; }
+  .gl-table th { background: #F8FAFC; color: #475569; padding: 12px 16px; font-weight: 700; text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; font-family: 'Manrope', sans-serif; }
+  .gl-table td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; color: #0F172A; vertical-align: middle; font-weight: 600; font-size: 13.5px; font-family: 'Manrope', sans-serif; }
   .gl-table tr:last-child td { border-bottom: none; }
   .gl-table tr:hover td { background: #F8FAFC; }
   .gl-excel-total-row td { background: #ECFDF5 !important; border-top: 2px solid #059669 !important; color: #047857 !important; font-weight: 800 !important; font-size: 14px !important; padding: 14px 16px !important; }
@@ -591,10 +609,11 @@ const STYLES = `
     overflow: hidden;
     letter-spacing: -0.1px;
     transition: color 0.15s ease;
+    font-family: 'Manrope', sans-serif;
   }
   .gl-mobile-nav-item.active .gl-mobile-nav-label {
     color: #047857;
-    font-weight: 800;
+    font-weight: 600;
   }
 
   /* Mobile More Drawer Sheet */
@@ -604,26 +623,26 @@ const STYLES = `
     background: rgba(15, 23, 42, 0.45);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 10001;
+    z-index: 10000;
     display: flex;
-    align-items: flex-end;
-    animation: fadeIn 0.18s ease-out;
+    justify-content: flex-end;
+    flex-direction: column;
   }
   .gl-mobile-more-sheet {
-    width: 100%;
     background: #FFFFFF;
-    border-top-left-radius: 22px;
-    border-top-right-radius: 22px;
-    padding: 12px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px;
-    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.12);
-    animation: glSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    border-radius: 20px 20px 0 0;
+    padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+    animation: glSlideUpMobile 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .gl-mobile-more-handle {
-    width: 40px;
+    width: 36px;
     height: 4px;
-    border-radius: 4px;
     background: #CBD5E1;
-    margin: 0 auto 12px auto;
+    border-radius: 2px;
+    margin: 0 auto 12px;
   }
   .gl-mobile-more-header {
     display: flex;
@@ -635,9 +654,9 @@ const STYLES = `
   }
   .gl-mobile-more-header h4 {
     margin: 0;
-    font-family: 'Montserrat', sans-serif !important;
+    font-family: 'Manrope', sans-serif !important;
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
     color: #0F172A;
   }
   .gl-mobile-more-close {

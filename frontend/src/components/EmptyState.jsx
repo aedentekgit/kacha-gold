@@ -100,9 +100,9 @@ export default function EmptyState({
         style={{
           margin: "0 0 10px",
           fontSize: 21,
-          fontWeight: 800,
+          fontWeight: 700,
           color: "#0F172A",
-          fontFamily: "'Montserrat', sans-serif",
+          fontFamily: "'Manrope', sans-serif",
           letterSpacing: "-0.3px"
         }}
       >

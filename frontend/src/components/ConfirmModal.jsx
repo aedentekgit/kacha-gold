@@ -125,7 +125,7 @@ export default function ConfirmModal({
             {renderIcon()}
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#1C1917", fontFamily: "'Montserrat', sans-serif" }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#1C1917", fontFamily: "'Manrope', sans-serif" }}>
               {title}
             </h3>
           </div>

@@ -145,15 +145,16 @@ export default function PinLockScreen({ expectedPin = "123456", onSuccess }) {
         }
 
         .gl-pin-title {
-          font-family: 'Montserrat', sans-serif !important;
+          font-family: 'Manrope', sans-serif !important;
           font-size: 20px;
-          font-weight: 800;
+          font-weight: 700;
           color: #0F172A;
           margin: 0 0 6px 0;
           letter-spacing: -0.3px;
         }
 
         .gl-pin-subtitle {
+          font-family: 'Manrope', sans-serif;
           font-size: 13px;
           color: #64748B;
           margin: 0 0 24px 0;
@@ -218,7 +219,7 @@ export default function PinLockScreen({ expectedPin = "123456", onSuccess }) {
           background: #F8FAFC;
           border: 1px solid #E2E8F0;
           color: #0F172A;
-          font-family: 'Montserrat', sans-serif;
+          font-family: 'Manrope', sans-serif;
           font-size: 22px;
           font-weight: 700;
           display: flex;
