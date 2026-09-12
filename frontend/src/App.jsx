@@ -1048,7 +1048,10 @@ export default function App() {
   const liveMonthName = SHORT_MONTHS[liveTime.getMonth()];
   const liveDateStr = `${liveDayName}, ${liveDayNum} ${liveMonthName}`;
 
-  const liveHours = String(liveTime.getHours()).padStart(2, "0");
+  const rawHours = liveTime.getHours();
+  const hours12 = rawHours % 12 || 12;
+  const liveAmPm = rawHours >= 12 ? "PM" : "AM";
+  const liveHours = String(hours12).padStart(2, "0");
   const liveMinutes = String(liveTime.getMinutes()).padStart(2, "0");
   const liveSeconds = String(liveTime.getSeconds()).padStart(2, "0");
   const liveTimeStr = `${liveHours}:${liveMinutes}:${liveSeconds}`;
@@ -1442,7 +1445,10 @@ export default function App() {
               >
                 <span style={{ color: "#0F172A", fontWeight: 700 }}>{liveDateStr}</span>
                 <span style={{ color: "#94A3B8", fontWeight: 500, fontSize: isMobile ? 8 : 10 }}>•</span>
-                <span style={{ color: "#059669", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{liveTimeStr}</span>
+                <span style={{ color: "#059669", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+                  {liveTimeStr}
+                  <span style={{ fontSize: isMobile ? 8.5 : 9.5, fontWeight: 700, marginLeft: 2.5 }}>{liveAmPm}</span>
+                </span>
                 {!isMobile && (
                   <>
                     <span style={{ color: "#CBD5E1", margin: "0 3px" }}>|</span>
