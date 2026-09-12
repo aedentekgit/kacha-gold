@@ -124,7 +124,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                         <div className="gl-thumb-placeholder" style={{ width: 38, height: 38, borderRadius: 10 }}><Coins size={18} color="#D97706" /></div>
                       )}
                       <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "#D97706", display: "flex", alignItems: "center", gap: 6 }}>
                           <span>{p.grams.toFixed(2)} g</span>
                           {p.isSold && (
                             <span style={{ background: "#DCFCE7", color: "#15803D", border: "1px solid #86EFAC", fontSize: 10, padding: "1px 6px", borderRadius: 9999, fontWeight: 800 }}>
@@ -328,7 +328,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
               <tfoot>
                 <tr className="gl-excel-total-row">
                   <td colSpan={2} style={{ fontWeight: 800, textTransform: "uppercase" }}>TOTAL SUMMARY ({purchases.length} LOTS)</td>
-                  <td style={{ fontWeight: 800, color: "#059669", fontSize: "14px" }}>{purchases.reduce((s, p) => s + (p.grams || 0), 0).toFixed(2)} g</td>
+                  <td style={{ fontWeight: 800, color: "#D97706", fontSize: "14px" }}>{purchases.reduce((s, p) => s + (p.grams || 0), 0).toFixed(2)} g</td>
                   <td style={{ fontWeight: 800, fontSize: "14px" }}>{inr(purchases.reduce((s, p) => s + (p.overallPrice || ((p.grams || 0) * (p.ratePaid || 0))), 0))}</td>
                   <td>—</td>
                   <td>—</td>

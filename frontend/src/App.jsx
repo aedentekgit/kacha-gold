@@ -164,12 +164,12 @@ const STYLES = `
     white-space: nowrap;
   }
   .gl-brand-sub {
-    font-size: 11px;
-    color: #059669;
-    margin: 1px 0 0;
+    font-size: 11.5px;
+    color: #64748B;
+    margin: 0;
     font-weight: 500;
     white-space: nowrap;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.1px;
   }
 
   .gl-quick-stat-strip {
@@ -780,8 +780,36 @@ const STYLES = `
       padding-bottom: 20px;
     }
 
-    .gl-header-wrap { padding: calc(10px + env(safe-area-inset-top, 0px)) 0 0; }
-    .gl-header { flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 10px; }
+    .gl-header-wrap {
+      padding: env(safe-area-inset-top, 0px) 0 0;
+      height: calc(58px + env(safe-area-inset-top, 0px));
+      min-height: calc(58px + env(safe-area-inset-top, 0px));
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+    }
+    .gl-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      height: 58px;
+      min-height: 58px;
+      padding-top: 0;
+      padding-bottom: 0;
+      box-sizing: border-box;
+      flex-wrap: nowrap !important;
+    }
+    .gl-header-brand {
+      gap: 9px !important;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+    .gl-brand-icon {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 10px !important;
+    }
     .gl-card { padding: 14px 14px; margin-bottom: 12px; border-radius: 16px; }
 
     .gl-mobile-bottom-bar { display: flex; }
@@ -999,12 +1027,31 @@ export default function App() {
   const [showKachaModal, setShowKachaModal] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640);
+  const [liveTime, setLiveTime] = useState(() => new Date());
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 640);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setLiveTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+  const SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const liveDayName = SHORT_DAYS[liveTime.getDay()];
+  const liveDayNum = liveTime.getDate();
+  const liveMonthName = SHORT_MONTHS[liveTime.getMonth()];
+  const liveDateStr = `${liveDayName}, ${liveDayNum} ${liveMonthName}`;
+
+  const liveHours = String(liveTime.getHours()).padStart(2, "0");
+  const liveMinutes = String(liveTime.getMinutes()).padStart(2, "0");
+  const liveSeconds = String(liveTime.getSeconds()).padStart(2, "0");
+  const liveTimeStr = `${liveHours}:${liveMinutes}:${liveSeconds}`;
 
   const handleOpenKachaHistory = (item = null) => {
     setSelectedHistoryItem(item);
@@ -1372,21 +1419,41 @@ export default function App() {
                 src={`${import.meta.env.BASE_URL}logo.png`}
                 alt="VMoney Gold Logo"
                 style={{
-                  width: isMobile ? 28 : 34,
-                  height: isMobile ? 28 : 34,
+                  width: isMobile ? 26 : 34,
+                  height: isMobile ? 26 : 34,
                   objectFit: "contain"
                 }}
               />
             </div>
-            <div style={{ minWidth: 0 }}>
-              <h1 className="gl-brand-title" style={{ fontSize: isMobile ? 15.5 : 19 }}>VMG Kacha Gold</h1>
-              {!isMobile && (
-                <p className="gl-brand-sub">Live Rate Tracking, Price Graphs & Intelligent Sell Advice</p>
-              )}
+            <div style={{ minWidth: 0, flex: "1 1 auto" }}>
+              <h1 className="gl-brand-title" style={{ fontSize: isMobile ? 15 : 19, lineHeight: 1.2 }}>VMG Kacha Gold</h1>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  marginTop: isMobile ? 2 : 2,
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: isMobile ? 11 : 12.5,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  lineHeight: 1.2
+                }}
+              >
+                <span style={{ color: "#0F172A", fontWeight: 700 }}>{liveDateStr}</span>
+                <span style={{ color: "#94A3B8", fontWeight: 500, fontSize: isMobile ? 8 : 10 }}>•</span>
+                <span style={{ color: "#059669", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{liveTimeStr}</span>
+                {!isMobile && (
+                  <>
+                    <span style={{ color: "#CBD5E1", margin: "0 3px" }}>|</span>
+                    <span className="gl-brand-sub">Live Rate Tracking & Intelligent Sell Advice</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 10, flexShrink: 0 }}>
             {isMobile ? (
               /* Sleek Mobile Live Rate Ticker Pill */
               <div
@@ -1394,16 +1461,17 @@ export default function App() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 5,
+                  gap: 4,
                   background: "#ECFDF5",
                   border: "1px solid #A7F3D0",
                   borderRadius: 9999,
-                  padding: "4px 9px",
+                  padding: "4.5px 9px",
                   fontSize: 11.5,
                   fontWeight: 800,
                   color: "#047857",
                   cursor: "pointer",
-                  boxShadow: "0 1px 2px rgba(5, 150, 105, 0.08)"
+                  boxShadow: "0 1px 2px rgba(5, 150, 105, 0.08)",
+                  whiteSpace: "nowrap"
                 }}
               >
                 <span style={{ fontSize: 9.5, color: "#065F46", textTransform: "uppercase", fontWeight: 700 }}>Kacha</span>
@@ -1443,9 +1511,9 @@ export default function App() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: isMobile ? 32 : 36,
-                height: isMobile ? 32 : 36,
-                borderRadius: 10,
+                width: isMobile ? 34 : 36,
+                height: isMobile ? 34 : 36,
+                borderRadius: isMobile ? 9 : 10,
                 color: "#475569",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
                 transition: "all 0.15s ease",
