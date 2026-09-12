@@ -38,6 +38,7 @@ async function startServer(port) {
     console.error("Database seed error:", err.message);
   }
 
+  
   const server = app.listen(port, () => {
     console.log(`🚀 Gold Buyback Backend Server running at http://localhost:${port}`);
   });
