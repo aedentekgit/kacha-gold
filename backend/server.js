@@ -21,7 +21,11 @@ app.use("/api/rates", ratesRouter);
 app.use("/api/purchases", purchasesRouter);
 app.use("/api/settings", settingsRouter);
 
-// Health Check
+// Health Check & Root Route
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Gold Buyback Backend Server is running", timestamp: new Date().toISOString() });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
