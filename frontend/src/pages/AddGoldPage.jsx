@@ -393,8 +393,8 @@ export default function AddGoldPage({ kachaPerGram, latestRate, purchases, persi
                         </div>
                       )}
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#D97706", display: "flex", alignItems: "center", gap: 6 }}>
-                          <span>{p.grams.toFixed(2)} g</span>
+                        <div style={{ fontSize: 13.5, fontWeight: 900, color: "#D97706", display: "flex", alignItems: "center", gap: 6, letterSpacing: "-0.2px" }}>
+                          <span style={{ fontWeight: 900 }}>{p.grams.toFixed(2)} g</span>
                           <span style={{ fontSize: 10.5, fontWeight: 500, color: "#64748B" }}>
                             • {fmtDate(p.date)}
                           </span>

@@ -124,8 +124,8 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                         <div className="gl-thumb-placeholder" style={{ width: 38, height: 38, borderRadius: 10 }}><Coins size={18} color="#D97706" /></div>
                       )}
                       <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#D97706", display: "flex", alignItems: "center", gap: 6 }}>
-                          <span>{p.grams.toFixed(2)} g</span>
+                        <div style={{ fontSize: 16.5, fontWeight: 900, color: "#D97706", display: "flex", alignItems: "center", gap: 6, letterSpacing: "-0.2px" }}>
+                          <span style={{ fontWeight: 900 }}>{p.grams.toFixed(2)} g</span>
                           {p.isSold && (
                             <span style={{ background: "#DCFCE7", color: "#15803D", border: "1px solid #86EFAC", fontSize: 10, padding: "1px 6px", borderRadius: 9999, fontWeight: 800 }}>
                               SOLD

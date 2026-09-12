@@ -634,8 +634,8 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                 {/* Top Row: Weight + Badges */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "#D97706", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{item.grams.toFixed(2)} g</span>
+                    <div style={{ fontSize: 16.5, fontWeight: 900, color: "#D97706", display: "flex", alignItems: "center", gap: 6, letterSpacing: "-0.2px" }}>
+                      <span style={{ fontWeight: 900 }}>{item.grams.toFixed(2)} g</span>
                       <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>
                         • {fmtDate(item.date)}
                       </span>
