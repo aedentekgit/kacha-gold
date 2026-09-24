@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { X, Clock, Filter } from "lucide-react";
 import { inr, fmtDate, getEntryTimestamp } from "../utils/goldHelpers";
 
@@ -144,7 +145,7 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div
       className="gl-modal-overlay"
       onClick={onClose}
@@ -439,4 +440,5 @@ export default function KachaHistoryModal({ isOpen, onClose, sortedRates = [], p
       </div>
     </div>
   );
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }

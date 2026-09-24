@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export default function ConfirmModal({
@@ -116,7 +117,7 @@ export default function ConfirmModal({
     };
   };
 
-  return (
+  const modalContent = (
     <div className="gl-modal-overlay" onClick={onClose}>
       <div className="gl-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="gl-modal-handle" />
@@ -160,4 +161,6 @@ export default function ConfirmModal({
       </div>
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }

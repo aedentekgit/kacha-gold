@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Coins, Pencil, Trash2, TrendingUp, TrendingDown, Eye, X, FilterX, Plus } from "lucide-react";
 import { inr, fmtDate, compareEntriesDesc, compareEntriesAsc } from "../utils/goldHelpers";
@@ -123,15 +124,26 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                   }}
                   onClick={() => setViewingPurchase(p)}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  {/* Top Row: Thumbnail, Grams, Date & Action Buttons */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center", minWidth: 0, flex: "1 1 auto" }}>
                       {p.thumbnail ? (
-                        <img src={p.thumbnail} className="gl-thumb" alt="Gold photo" style={{ width: 38, height: 38, borderRadius: 10 }} />
+                        <img
+                          src={p.thumbnail}
+                          className="gl-thumb"
+                          alt="Gold photo"
+                          style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, objectFit: "cover" }}
+                        />
                       ) : (
-                        <div className="gl-thumb-placeholder" style={{ width: 38, height: 38, borderRadius: 10 }}><Coins size={18} color="#D97706" /></div>
+                        <div
+                          className="gl-thumb-placeholder"
+                          style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0 }}
+                        >
+                          <Coins size={18} color="#D97706" />
+                        </div>
                       )}
-                      <div>
-                        <div style={{ fontSize: 16.5, fontWeight: 900, color: "#D97706", display: "flex", alignItems: "center", gap: 6, letterSpacing: "-0.2px" }}>
+                      <div style={{ minWidth: 0, flex: "1 1 auto" }}>
+                        <div style={{ fontSize: 16.5, fontWeight: 900, color: "#D97706", display: "flex", alignItems: "center", gap: 6, letterSpacing: "-0.2px", lineHeight: "20px" }}>
                           <span style={{ fontWeight: 900 }}>{p.grams.toFixed(2)} g</span>
                           {p.isSold && (
                             <span style={{ background: "#DCFCE7", color: "#15803D", border: "1px solid #86EFAC", fontSize: 10, padding: "1px 6px", borderRadius: 9999, fontWeight: 800 }}>
@@ -139,11 +151,13 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>{fmtDate(p.date)} · {p.notes || "Gold Lot"}</div>
+                        <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 2, fontWeight: 600 }}>
+                          {fmtDate(p.date)}
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "5px", alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
                         className="gl-btn-ghost gl-btn-sm"
@@ -155,9 +169,15 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                           borderColor: p.isSold ? "#86EFAC" : "#FECACA",
                           background: p.isSold ? "#DCFCE7" : "#FEF2F2",
                           fontWeight: 800,
-                          padding: "4px 8px",
+                          padding: "0 10px",
+                          height: "30px",
                           fontSize: "11px",
-                          borderRadius: 8
+                          borderRadius: 8,
+                          whiteSpace: "nowrap",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0
                         }}
                       >
                         {p.isSold ? "Sold" : "Mark Sold"}
@@ -166,7 +186,17 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                         type="button"
                         className="gl-btn-ghost gl-btn-sm"
                         onClick={() => onEdit && onEdit(p)}
-                        style={{ color: "#D97706", padding: "5px 7px", borderRadius: 8 }}
+                        style={{
+                          color: "#D97706",
+                          width: "30px",
+                          height: "30px",
+                          padding: 0,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: 8,
+                          flexShrink: 0
+                        }}
                         title="Edit"
                       >
                         <Pencil size={13} />
@@ -175,13 +205,46 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
                         type="button"
                         className="gl-btn-ghost gl-btn-sm"
                         onClick={() => deleteItem(p)}
-                        style={{ color: "#DC2626", padding: "5px 7px", borderRadius: 8 }}
+                        style={{
+                          color: "#DC2626",
+                          width: "30px",
+                          height: "30px",
+                          padding: 0,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: 8,
+                          flexShrink: 0
+                        }}
                         title="Delete"
                       >
                         <Trash2 size={13} />
                       </button>
                     </div>
                   </div>
+
+                  {/* Remarks / Notes (Full-width dedicated strip) */}
+                  {p.notes && (
+                    <div style={{
+                      fontSize: 11.5,
+                      color: "#334155",
+                      background: "#F8FAFC",
+                      border: "1px solid #E2E8F0",
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 6,
+                      lineHeight: 1.4
+                    }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.3px", flexShrink: 0, marginTop: 1 }}>
+                        Remarks:
+                      </span>
+                      <span style={{ fontWeight: 600, color: "#1E293B", wordBreak: "break-word" }}>
+                        {p.notes}
+                      </span>
+                    </div>
+                  )}
 
                   {/* 2-Column Comparison Bar */}
                   <div style={{
@@ -355,7 +418,7 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
       )}
 
       {/* View Purchase Details Modal */}
-      {viewingPurchase && (
+      {viewingPurchase && typeof document !== "undefined" && createPortal(
         <div className="gl-modal-overlay" onClick={() => setViewingPurchase(null)}>
           <div className="gl-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="gl-modal-handle" />
@@ -456,7 +519,8 @@ export default function PurchasesPage({ purchases, rateForDate, kachaPerGram, pe
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

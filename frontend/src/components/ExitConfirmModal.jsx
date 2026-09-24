@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogOut } from "lucide-react";
 import { useBackHandler } from "../utils/backButton";
 
@@ -26,7 +27,7 @@ export default function ExitConfirmModal({ isOpen, onClose, onConfirmExit }) {
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div
       className="gl-modal-overlay"
       onClick={onClose}
@@ -148,4 +149,5 @@ export default function ExitConfirmModal({ isOpen, onClose, onConfirmExit }) {
       </div>
     </div>
   );
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }

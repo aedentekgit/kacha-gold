@@ -647,17 +647,17 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                     )}
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                     {item.status === "STRONG_SELL" ? (
-                      <span className="gl-badge sell-strong" style={{ background: "#059669", color: "#FFFFFF", border: "none", fontWeight: 800, padding: "5px 10px", fontSize: "11px", borderRadius: 9999 }}>
+                      <span className="gl-badge sell-strong" style={{ background: "#059669", color: "#FFFFFF", border: "none", fontWeight: 800, padding: "5px 10px", fontSize: "11px", borderRadius: 9999, whiteSpace: "nowrap" }}>
                         <ArrowUpRight size={12} /> SELL NOW
                       </span>
                     ) : item.status === "MODERATE_SELL" ? (
-                      <span className="gl-badge" style={{ background: "#FEF3C7", color: "#B45309", border: "1px solid #FDE68A", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 9999 }}>
+                      <span className="gl-badge" style={{ background: "#FEF3C7", color: "#B45309", border: "1px solid #FDE68A", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 9999, whiteSpace: "nowrap" }}>
                         <ArrowUpRight size={12} /> GAIN
                       </span>
                     ) : (
-                      <span className="gl-badge sell-hold" style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 9999 }}>
+                      <span className="gl-badge sell-hold" style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", fontWeight: 800, padding: "4px 8px", fontSize: "11px", borderRadius: 9999, whiteSpace: "nowrap" }}>
                         <TrendingDown size={12} /> HOLD
                       </span>
                     )}
@@ -676,7 +676,9 @@ export default function SellSignalsPage({ sellAnalysis, targetProfit, targetProf
                         fontWeight: 800,
                         padding: "5px 10px",
                         fontSize: "11.5px",
-                        borderRadius: 8
+                        borderRadius: 8,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0
                       }}
                     >
                       Sold

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Pencil, X, Camera } from "lucide-react";
 import { todayStr, inr } from "../utils/goldHelpers";
 
@@ -68,7 +69,7 @@ export default function EditPurchaseModal({ item, isOpen, onClose, onSave }) {
   const overallNum = parseFloat(overallPrice);
   const calculatedRate = gramsNum > 0 && overallNum > 0 ? overallNum / gramsNum : 0;
 
-  return (
+  const modalContent = (
     <div className="gl-modal-overlay" onClick={onClose}>
       <div className="gl-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="gl-modal-handle" />
@@ -167,4 +168,5 @@ export default function EditPurchaseModal({ item, isOpen, onClose, onSave }) {
       </div>
     </div>
   );
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }
