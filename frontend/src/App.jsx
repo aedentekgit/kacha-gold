@@ -1208,6 +1208,30 @@ export default function App() {
     })();
   }, []);
 
+  // Auto-refresh purchases when tab becomes visible, focused, or on navigating to /purchases
+  useEffect(() => {
+    const refreshPurchases = () => {
+      apiService.getPurchases().then((p) => {
+        if (Array.isArray(p)) setPurchases(p);
+      }).catch(() => {});
+    };
+
+    window.addEventListener("focus", refreshPurchases);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") refreshPurchases();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    if (location.pathname === "/purchases") {
+      refreshPurchases();
+    }
+
+    return () => {
+      window.removeEventListener("focus", refreshPurchases);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [location.pathname]);
+
   const persistRates = useCallback(async (next) => {
     setRates(next);
     // Find additions, deletions, or updates

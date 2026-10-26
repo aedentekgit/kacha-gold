@@ -10,7 +10,7 @@ import settingsRouter from "./routes/settings.js";
 dotenv.config();
 
 const app = express();
-const DEFAULT_PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());

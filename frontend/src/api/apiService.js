@@ -1,4 +1,18 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://kacha-gold.onrender.com/api";
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || host.startsWith("10.");
+    if (isLocal) {
+      return "http://localhost:5001/api";
+    }
+  }
+  return "https://kacha-gold.onrender.com/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -7,12 +21,17 @@ async function request(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (err) {
+    console.error(`[Kacha API Error] ${options.method || 'GET'} ${url}:`, err.message);
+    throw err;
   }
-  return response.json();
 }
 
 export const apiService = {

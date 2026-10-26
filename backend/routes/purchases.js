@@ -46,18 +46,59 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT update purchase by ID (Upsert friendly)
+// GET single purchase by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const purchase = await db.getPurchaseById(id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, error: "Purchase not found" });
+    }
+    res.json({ success: true, data: purchase });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// PUT update purchase by ID (Upsert friendly and syncs to CRM)
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const existing = await db.getPurchaseById(id);
+    let updated;
     if (!existing) {
       // Upsert: if it doesn't exist, create it
-      const newPur = await db.addPurchase({ ...req.body, id });
-      return res.json({ success: true, data: newPur });
+      updated = await db.addPurchase({ ...req.body, id });
+    } else {
+      updated = await db.updatePurchase(id, req.body);
     }
 
-    const updated = await db.updatePurchase(id, req.body);
+    // Bidirectional Sync: If this purchase was linked from VMG Marketplace CRM (id starts with kacha_)
+    if (id.startsWith("kacha_")) {
+      const subId = id.replace(/^kacha_/, "");
+      const crmTargets = [
+        `http://127.0.0.1:5000/api/submissions/${subId}/kacha-sync`,
+        `http://localhost:5000/api/submissions/${subId}/kacha-sync`,
+        `https://vmg-marketplace-lfxm.onrender.com/api/submissions/${subId}/kacha-sync`
+      ];
+      for (const target of crmTargets) {
+        try {
+          const syncRes = await fetch(target, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+            signal: AbortSignal.timeout(3000)
+          });
+          if (syncRes.ok) {
+            console.log(`[Kacha -> CRM Sync Success] Synced ${id} to ${target}`);
+            break;
+          }
+        } catch (e) {
+          // Try next target
+        }
+      }
+    }
+
     res.json({ success: true, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -72,6 +113,26 @@ router.delete("/:id", async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ success: false, error: "Purchase not found" });
     }
+
+    // If purchase was linked to CRM, notify CRM to reset sent status
+    if (id.startsWith("kacha_")) {
+      const subId = id.replace(/^kacha_/, "");
+      const crmTargets = [
+        `http://localhost:5000/api/submissions/${subId}/revoke-from-kacha`,
+        `https://vmg-marketplace-lfxm.onrender.com/api/submissions/${subId}/revoke-from-kacha`
+      ];
+      for (const target of crmTargets) {
+        try {
+          await fetch(target, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(3000)
+          });
+          break;
+        } catch (e) {}
+      }
+    }
+
     res.json({ success: true, message: "Purchase deleted successfully", id });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
